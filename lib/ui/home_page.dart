@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   late double _fontSize;
   late bool _bubbleTalkingPointMode;
   late String _bubbleUuid;
+  late double _widthBaseTriangle;
   String? _bubbleMovingUuid;
 
   @override
@@ -136,6 +137,8 @@ class _HomePageState extends State<HomePage> {
               center: item.centerPoint!,
               talkingPoint: item.talkingPoint!,
               sizeBubble: item.bubbleSize!,
+              widthBaseTriangle: item.bubbleSize!.width /
+                  (item.widthBaseTriangle ?? _widthBaseTriangle),
               movingMode:
                   _isMovingModeEnabled && item.uuid == _bubbleMovingUuid,
             )
@@ -181,6 +184,8 @@ class _HomePageState extends State<HomePage> {
             onConfirmBubblePressed: _onConfirmBubbleBtnPressed,
             displayRemoveBtn: _bubbleMovingUuid != null,
             onRemovedPressed: _onRemoveBubblePressed,
+            widthBaseTriangle: _widthBaseTriangle,
+            onWidthBaseTriangleChanged: _onWidthBaseTriangle,
           ),
         ),
       );
@@ -243,6 +248,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onCancelLastPressed() {
+    if (_bubbles.isEmpty) return;
     setState(() {
       _bubbles.removeLast();
       _bubbleTalkingPointMode = false;
@@ -304,8 +310,17 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onWidthBaseTriangle(double value) {
+    setState(() {
+      _widthBaseTriangle = value;
+    });
+  }
+
   void _onConfirmBubbleBtnPressed() {
     setState(() {
+      _bubbles
+          .firstWhere((Bubble element) => element.uuid == _bubbleUuid)
+          .widthBaseTriangle = _widthBaseTriangle;
       _bubbleTalkingPointMode = false;
     });
   }
@@ -342,15 +357,15 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _initVariables();
               },
-              child: const Text("Yes"),
+              child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                _initVariables();
               },
-              child: const Text("Cancel"),
+              child: const Text("Yes"),
             ),
           ],
         );
@@ -377,6 +392,7 @@ class _HomePageState extends State<HomePage> {
     _font = Constants.availableFonts.first;
     _fontSize = 20;
     _bubbleTalkingPointMode = false;
+    _widthBaseTriangle = 10;
     _bubbles.clear();
     setState(() {});
   }

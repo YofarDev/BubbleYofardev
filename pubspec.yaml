@@ -62,3 +62,15 @@ flutter:
     - family: OpenSans
       fonts:
         - asset: assets/fonts/OpenSans.ttf
+    - family: Manga
+      fonts:
+        - asset: assets/fonts/mangat.ttf
+    - family: Anime
+      fonts:
+        - asset: assets/fonts/animeace2_reg.otf
+    - family: Badaboom
+      fonts:
+        - asset: assets/fonts/BadaboomBB_Reg.otf
+    - family: FuturaHandwritten
+      fonts:
+        - asset: assets/fonts/FuturaHandwritten.ttf

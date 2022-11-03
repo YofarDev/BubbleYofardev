@@ -21,6 +21,7 @@ class SaveFileWeb {
     );
     final html.AnchorElement anchor =
         html.document.createElement('a') as html.AnchorElement
+          // ignore: unsafe_html
           ..href = url
           ..style.display = 'none'
           ..download = '$filename.csv';
@@ -32,8 +33,8 @@ class SaveFileWeb {
   static void saveImage(Uint8List bytes, String filename) {
     final html.Blob blob = html.Blob(<dynamic>[bytes], 'text/plain', 'native');
 
-    final html.AnchorElement anchorElement = html.AnchorElement(
-      href: html.Url.createObjectUrlFromBlob(blob).toString(),
+    html.AnchorElement(
+      href: html.Url.createObjectUrlFromBlob(blob),
     )
       ..download = '$filename.png'
       ..click();

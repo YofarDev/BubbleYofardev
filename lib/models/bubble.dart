@@ -13,6 +13,7 @@ class Bubble {
   Offset? talkingPoint;
   Offset? centerPoint;
   Size? bubbleSize;
+  double? widthBaseTriangle;
   late Offset relativeTalkingPoint;
   Bubble({
     required this.uuid,
@@ -26,6 +27,7 @@ class Bubble {
     this.talkingPoint,
     this.centerPoint,
     this.bubbleSize,
+    this.widthBaseTriangle,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +43,7 @@ class Bubble {
       'talkingPoint': talkingPoint,
       'centerPoint': centerPoint,
       'bubbleSize': bubbleSize,
+      'widthBaseTriangle': widthBaseTriangle,
     };
   }
 
@@ -57,6 +60,7 @@ class Bubble {
       talkingPoint: map['talkingPoint'] as Offset?,
       centerPoint: map['centerPoint'] as Offset?,
       bubbleSize: map['bubbleSize'] as Size,
+      widthBaseTriangle: map['widthBaseTriangle'] as double,
     );
   }
 
@@ -75,12 +79,13 @@ class Bubble {
       talkingPoint: row[8].toOffset(),
       centerPoint: row[9].toOffset(),
       bubbleSize: row[10].toSize(),
+      widthBaseTriangle: double.parse(row[11]),
     );
   }
 
   @override
   String toString() {
-    return '$uuid;$body;$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()}';
+    return '$uuid;$body;$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle';
   }
 }
 

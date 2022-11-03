@@ -16,6 +16,8 @@ class ToolsButtons extends StatelessWidget {
   final Function(bool value) onBubbleModelCheckboxPressed;
   final Function(String font) onFontChanged;
   final Function(double value) onFontSizedChanged;
+  final Function(double value) onWidthBaseTriangleChanged;
+  final double widthBaseTriangle;
   final String font;
   final double fontSize;
   final bool isMoveModeEnabled;
@@ -38,6 +40,8 @@ class ToolsButtons extends StatelessWidget {
     required this.onBubbleModelCheckboxPressed,
     required this.onFontChanged,
     required this.onFontSizedChanged,
+    required this.onWidthBaseTriangleChanged,
+    required this.widthBaseTriangle,
     required this.font,
     required this.fontSize,
     required this.isMoveModeEnabled,
@@ -93,13 +97,17 @@ class ToolsButtons extends StatelessWidget {
             _floatingBtn(Icons.image, 'Load image', onLoadImagePressed),
             const SizedBox(width: 16),
             _floatingBtn(
-                Icons.file_copy, 'Load previous csv', onLoadDialogsCsvPressed),
+              Icons.file_copy,
+              'Load previous csv',
+              onLoadDialogsCsvPressed,
+            ),
           ],
         ),
         const SizedBox(height: 32),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            if (displayConfirmBubble) _sliderWidthBaseTriangle(),
             if (displayConfirmBubble)
               _floatingBtn(
                 Icons.check,
@@ -193,6 +201,15 @@ class ToolsButtons extends StatelessWidget {
         tooltip: tag,
         backgroundColor: color ?? AppColors.primary,
         child: Icon(icon),
+      );
+
+  Widget _sliderWidthBaseTriangle() => Slider(
+        value: widthBaseTriangle,
+        onChanged: onWidthBaseTriangleChanged,
+        min: 4,
+        max: 40,
+        activeColor: AppColors.yellow,
+        inactiveColor: AppColors.yellowTransparent,
       );
 
 //////////////////////////////// LISTENERS ////////////////////////////////

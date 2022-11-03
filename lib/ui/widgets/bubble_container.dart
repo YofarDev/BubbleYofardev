@@ -38,7 +38,7 @@ class BubbleContainer extends StatelessWidget {
       child: ParsedText(
         text: txt,
         style: TextStyle(fontFamily: font, fontSize: fontSize),
-        parse: font == "" ? _fixCaps() : <MatchText>[],
+        parse: font == "BottleRocket" ? _fixCaps() : <MatchText>[],
       ),
     );
   }
