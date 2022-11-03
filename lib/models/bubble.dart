@@ -79,7 +79,7 @@ class Bubble {
       talkingPoint: row[8].toOffset(),
       centerPoint: row[9].toOffset(),
       bubbleSize: row[10].toSize(),
-      widthBaseTriangle: double.parse(row[11]),
+      widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
     );
   }
 

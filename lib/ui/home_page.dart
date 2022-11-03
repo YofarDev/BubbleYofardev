@@ -5,11 +5,14 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:measured_size/measured_size.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:uuid/uuid.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 
 import '../models/bubble.dart';
+import '../res/app_colors.dart';
 import '../utils/constants.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
@@ -37,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   late String _bubbleUuid;
   late double _widthBaseTriangle;
   String? _bubbleMovingUuid;
+  late Color _background;
 
   @override
   void initState() {
@@ -62,28 +66,41 @@ class _HomePageState extends State<HomePage> {
 
   Widget _screenshotableCanvas() => Screenshot<dynamic>(
         controller: _screenshotController,
-        child: Listener(
-          onPointerUp: (PointerUpEvent e) {
-            _onScreenPressed(e);
-          },
-          onPointerMove: (PointerMoveEvent e) {
-            _onScreenPressing(e);
-          },
-          child: ColoredBox(
-            color: Colors.white,
-            child: Stack(
-              children: <Widget>[
-                if (_image != null)
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 64),
-                      child: Image.memory(_image!),
-                    ),
-                  ),
-                // ..._bubbles,
-                ..._bubbles.map((Bubble item) => _getBubble(item)),
-              ],
+        child: Zoom(
+          maxZoomWidth: MediaQuery.of(context).size.width,
+          maxZoomHeight: MediaQuery.of(context).size.height,
+          backgroundColor: _background,
+          initScale: 0.5,
+          enableScroll: _isMovingModeEnabled,
+          canvasColor: _background,
+          child: Listener(
+            onPointerUp: (PointerUpEvent e) {
+              _onScreenPressed(e);
+            },
+            onPointerMove: (PointerMoveEvent e) {
+              _onScreenPressing(e);
+            },
+            child: ColoredBox(
+              color: _background,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    if (_image != null)
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(64),
+                          child: Image.memory(_image!),
+                        ),
+                      ),
+                    // ..._bubbles,
+                    ..._bubbles.map((Bubble item) => _getBubble(item)),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -147,15 +164,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _textField() => Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          color: Colors.grey[300],
-          width: 600,
-          height: 60,
-          child: TextField(
-            maxLines: 3,
-            controller: _textController,
+  Widget _textField() => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(),
+              color: AppColors.greyTransparent,
+            ),
+            width: 300,
+            height: 60,
+            child: TextField(
+              maxLines: 3,
+              controller: _textController,
+              cursorColor: Colors.black,
+              style: TextStyle(fontFamily: _font),
+              decoration: const InputDecoration(
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.all(16),
+              ),
+            ),
           ),
         ),
       );
@@ -186,6 +217,7 @@ class _HomePageState extends State<HomePage> {
             onRemovedPressed: _onRemoveBubblePressed,
             widthBaseTriangle: _widthBaseTriangle,
             onWidthBaseTriangleChanged: _onWidthBaseTriangle,
+            onBackgroundColorPickerPressed: _onBackgroundColorPickerPressed,
           ),
         ),
       );
@@ -316,6 +348,33 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onBackgroundColorPickerPressed() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Background color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: _background,
+            onColorChanged: (Color value) {
+              setState(() {
+                _background = value;
+              });
+            },
+          ),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onConfirmBubbleBtnPressed() {
     setState(() {
       _bubbles
@@ -393,6 +452,7 @@ class _HomePageState extends State<HomePage> {
     _fontSize = 20;
     _bubbleTalkingPointMode = false;
     _widthBaseTriangle = 10;
+    _background = Colors.white;
     _bubbles.clear();
     setState(() {});
   }

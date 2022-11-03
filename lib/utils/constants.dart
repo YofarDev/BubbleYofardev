@@ -1,9 +1,9 @@
 class Constants {
   static List<String> availableFonts = <String>[
+    'Anime',
     'BottleRocket',
     'Badaboom',
     'Manga',
-    'Anime',
     'FuturaHandwritten',
     'Prompt',
     'Raleway',

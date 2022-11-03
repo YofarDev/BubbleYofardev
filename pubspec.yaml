@@ -35,6 +35,10 @@ dependencies:
   flutter_parsed_text:
   # Uuid
   uuid:
+  # Color picker
+  flutter_colorpicker:
+  # Zoom widget
+  zoom_widget:
 
 
 dev_dependencies:

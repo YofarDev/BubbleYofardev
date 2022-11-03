@@ -26,6 +26,7 @@ class ToolsButtons extends StatelessWidget {
   final bool displayConfirmBubble;
   final bool displayRemoveBtn;
   final Function() onConfirmBubblePressed;
+  final Function() onBackgroundColorPickerPressed;
 
   const ToolsButtons({
     super.key,
@@ -50,93 +51,118 @@ class ToolsButtons extends StatelessWidget {
     required this.displayConfirmBubble,
     required this.displayRemoveBtn,
     required this.onConfirmBubblePressed,
+    required this.onBackgroundColorPickerPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        _fontPicker(),
-        const SizedBox(height: 32),
-        _fontSizePicker(),
-        const SizedBox(height: 32),
-        _getCheckbox(
-          context,
-          'Round bubble',
-          onBubbleModelCheckboxPressed,
-          isBubbleMode,
-        ),
-        const SizedBox(height: 32),
-        _getCheckbox(
-          context,
-          'Yellow background',
-          onYellowBgCheckboxPressed,
-          isYellowBg,
-          color: AppColors.yellow,
-        ),
-        const SizedBox(height: 32),
-        _getCheckbox(
-          context,
-          'Moving mode',
-          onMoveModeCheckboxPressed,
-          isMoveModeEnabled,
-        ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            _floatingBtn(
-              Icons.restart_alt,
-              'Reset all',
-              onResetPressed,
-              color: Colors.red[400],
-            ),
-            const SizedBox(width: 16),
-            _floatingBtn(Icons.image, 'Load image', onLoadImagePressed),
-            const SizedBox(width: 16),
-            _floatingBtn(
-              Icons.file_copy,
-              'Load previous csv',
-              onLoadDialogsCsvPressed,
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            if (displayConfirmBubble) _sliderWidthBaseTriangle(),
-            if (displayConfirmBubble)
-              _floatingBtn(
-                Icons.check,
-                'Confirm bubble',
-                onConfirmBubblePressed,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(20),
+        color: AppColors.greyTransparent,
+      ),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              const SizedBox(height: 32),
+              _backgroundColorPickerBtn(),
+              const SizedBox(height: 32),
+              _fontPicker(),
+              const SizedBox(height: 32),
+              _fontSizePicker(),
+              const SizedBox(height: 32),
+              _getCheckbox(
+                context,
+                'Round bubble',
+                onBubbleModelCheckboxPressed,
+                isBubbleMode,
+              ),
+              const SizedBox(height: 32),
+              _getCheckbox(
+                context,
+                'Yellow background',
+                onYellowBgCheckboxPressed,
+                isYellowBg,
                 color: AppColors.yellow,
               ),
-            if (displayRemoveBtn)
-              _floatingBtn(
-                Icons.delete,
-                'Remove bubble',
-                onRemovedPressed,
-                color: AppColors.yellow,
+              const SizedBox(height: 32),
+              _getCheckbox(
+                context,
+                'Moving mode',
+                onMoveModeCheckboxPressed,
+                isMoveModeEnabled,
               ),
-            const SizedBox(width: 16),
-            _floatingBtn(
-              Icons.subdirectory_arrow_left,
-              'Cancel last',
-              onCancelLastPressed,
-            ),
-            const SizedBox(width: 16),
-            _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
-          ],
-        )
-      ],
+              const SizedBox(height: 32),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _floatingBtn(
+                    Icons.restart_alt,
+                    'Reset all',
+                    onResetPressed,
+                    color: Colors.red[400],
+                  ),
+                  const SizedBox(width: 16),
+                  _floatingBtn(Icons.image, 'Load image', onLoadImagePressed),
+                  const SizedBox(width: 16),
+                  _floatingBtn(
+                    Icons.file_copy,
+                    'Load previous csv',
+                    onLoadDialogsCsvPressed,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (displayConfirmBubble) _sliderWidthBaseTriangle(),
+                  if (displayConfirmBubble)
+                    _floatingBtn(
+                      Icons.check,
+                      'Confirm bubble',
+                      onConfirmBubblePressed,
+                      color: AppColors.yellow,
+                    ),
+                  if (displayRemoveBtn)
+                    _floatingBtn(
+                      Icons.delete,
+                      'Remove bubble',
+                      onRemovedPressed,
+                      color: AppColors.yellow,
+                    ),
+                  const SizedBox(width: 16),
+                  _floatingBtn(
+                    Icons.subdirectory_arrow_left,
+                    'Cancel last',
+                    onCancelLastPressed,
+                  ),
+                  const SizedBox(width: 16),
+                  _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
 //////////////////////////////// WIDGETS ////////////////////////////////
+
+  Widget _backgroundColorPickerBtn() => MaterialButton(
+        onPressed: onBackgroundColorPickerPressed,
+        color: AppColors.primary,
+        child: const Text(
+          'Background color',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
 
   Widget _fontPicker() => DropdownButton<dynamic>(
         items: Constants.availableFonts
