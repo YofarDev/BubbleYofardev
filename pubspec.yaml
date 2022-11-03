@@ -1,0 +1,64 @@
+name: comic_text_yofardev
+description: Easily put text on my comics
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0-177.0.dev <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Help you have a better code
+  lint:
+  # To manage multiple languages
+  flutter_localizations:
+    sdk: flutter
+  # To cache image from network
+  cached_network_image:
+  # Zoom and pan image View
+  photo_view:
+  # Shared pref
+  shared_preferences:
+  # To get size of a widget
+  measured_size:
+  # Csv 
+  csv:
+  # Screenshot
+  screenshot:
+  # File picker
+  file_picker: ^5.0.1
+  universal_io:
+  # Parsed text
+  flutter_parsed_text:
+  # Uuid
+  uuid:
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+  fonts:
+    - family: Prompt
+      fonts:
+        - asset: assets/fonts/Prompt-Regular.ttf
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
+    - family: BottleRocket
+      fonts:
+        - asset: assets/fonts/BottleRocket.ttf
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans.ttf
