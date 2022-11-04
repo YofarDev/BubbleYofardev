@@ -47,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _listenerTextField();
     _initVariables();
   }
 
@@ -118,18 +119,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _getBubble(Bubble item) {
     return GestureDetector(
-      onTap: () {
-        if (!_isMovingModeEnabled) return;
-        setState(() {
-          _bubbleMovingUuid = item.uuid;
-        });
-      },
-      onTapDown: (_) {
-        if (!_isMovingModeEnabled) return;
-        setState(() {
-          _bubbleMovingUuid = item.uuid;
-        });
-      },
+      onTap: () => _onBubbleTap(item),
+      onTapDown: (_) => _onBubbleTap(item),
       child: Stack(
         children: <Widget>[
           Positioned(
@@ -228,9 +219,10 @@ class _HomePageState extends State<HomePage> {
             widthBaseTriangle: _widthBaseTriangle,
             onWidthBaseTriangleChanged: _onWidthBaseTriangle,
             onBackgroundColorPickerPressed: _onBackgroundColorPickerPressed,
-            displayStrokeSlider: _image != null,
+            hasImage: _image != null,
             onStrokeChanged: _onStrokeImageChanged,
             strokeImage: _strokeImage,
+            onRemoveImageBtnPressed: _onRemoveImageBtnPressed,
           ),
         ),
       );
@@ -283,7 +275,6 @@ class _HomePageState extends State<HomePage> {
     PointerUpEvent details,
   ) {
     if (_isMovingModeEnabled) {
-      _moveOldBubble(details.position);
       return;
     }
     if (_bubbleTalkingPointMode) {
@@ -422,6 +413,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onRemoveImageBtnPressed(){
+    setState(() {
+      _image = null;
+    });
+  }
+
   void _onFontSizeChanged(double value) {
     setState(() {
       _fontSize = value.roundToDouble();
@@ -473,6 +470,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onBubbleTap(Bubble bubble) {
+    if (!_isMovingModeEnabled) return;
+    setState(() {
+      _bubbleMovingUuid = bubble.uuid;
+      _textController.text = bubble.body;
+    });
+  }
+
 //////////////////////////////// FUNCTIONS ////////////////////////////////
 
   void _initVariables() {
@@ -502,6 +507,17 @@ class _HomePageState extends State<HomePage> {
         );
         bubble.talkingPoint = bubble.position - bubble.relativeTalkingPoint;
       }
+    });
+  }
+
+  void _listenerTextField() {
+    _textController.addListener(() {
+      if (!_isMovingModeEnabled) return;
+      final Bubble bubble = _bubbles
+          .firstWhere((Bubble element) => element.uuid == _bubbleMovingUuid);
+      setState(() {
+        bubble.body = _textController.text;
+      });
     });
   }
 }

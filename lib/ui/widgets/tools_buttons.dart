@@ -28,8 +28,9 @@ class ToolsButtons extends StatelessWidget {
   final Function() onConfirmBubblePressed;
   final Function() onBackgroundColorPickerPressed;
   final Function(double value) onStrokeChanged;
-  final bool displayStrokeSlider;
+  final bool hasImage;
   final double strokeImage;
+  final Function() onRemoveImageBtnPressed;
 
   const ToolsButtons({
     super.key,
@@ -56,8 +57,9 @@ class ToolsButtons extends StatelessWidget {
     required this.onConfirmBubblePressed,
     required this.onBackgroundColorPickerPressed,
     required this.onStrokeChanged,
-    required this.displayStrokeSlider,
+    required this.hasImage,
     required this.strokeImage,
+    required this.onRemoveImageBtnPressed,
   });
 
   @override
@@ -75,15 +77,21 @@ class ToolsButtons extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              if (displayStrokeSlider) const SizedBox(height: 16),
-              if (displayStrokeSlider) _strokeImageSlider(),
-              const SizedBox(height: 16),
-              _backgroundColorPickerBtn(),
+              if (hasImage)
+                _button(
+                  "Remove image",
+                  onRemoveImageBtnPressed,
+                  color: AppColors.yellow,
+                ),
+              if (hasImage) const SizedBox(height: 16),
+              if (hasImage) _strokeImageSlider(),
+              if (hasImage) const SizedBox(height: 16),
+              _button("Background color", onBackgroundColorPickerPressed),
               const SizedBox(height: 16),
               _fontPicker(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _fontSizePicker(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _getCheckbox(
                 context,
                 'Round bubble',
@@ -99,13 +107,20 @@ class ToolsButtons extends StatelessWidget {
                 color: AppColors.yellow,
               ),
               const SizedBox(height: 8),
-              _getCheckbox(
-                context,
-                'Moving mode',
-                onMoveModeCheckboxPressed,
-                isMoveModeEnabled,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const Icon(Icons.edit, size: 16, color: Colors.black54),
+                  const SizedBox(width: 4),
+                  _getCheckbox(
+                    context,
+                    'Edit mode',
+                    onMoveModeCheckboxPressed,
+                    isMoveModeEnabled,
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -125,7 +140,7 @@ class ToolsButtons extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -146,20 +161,20 @@ class ToolsButtons extends StatelessWidget {
                   _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
                 ],
               ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (displayConfirmBubble) _sliderWidthBaseTriangle(),
-                  if (displayConfirmBubble)
+              if (displayConfirmBubble) const SizedBox(height: 16),
+              if (displayConfirmBubble)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _sliderWidthBaseTriangle(),
                     _floatingBtn(
                       Icons.check,
                       'Confirm bubble',
                       onConfirmBubblePressed,
                       color: AppColors.yellow,
                     ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -169,12 +184,13 @@ class ToolsButtons extends StatelessWidget {
 
 //////////////////////////////// WIDGETS ////////////////////////////////
 
-  Widget _backgroundColorPickerBtn() => MaterialButton(
-        onPressed: onBackgroundColorPickerPressed,
-        color: AppColors.primary,
-        child: const Text(
-          'Background color',
-          style: TextStyle(color: Colors.white),
+  Widget _button(String tag, Function() onPressed, {Color? color}) =>
+      MaterialButton(
+        onPressed: onPressed,
+        color: color ?? AppColors.primary,
+        child: Text(
+          tag,
+          style: const TextStyle(color: Colors.white),
         ),
       );
 
