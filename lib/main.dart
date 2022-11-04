@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      title: "Bubble Yofardev",
       debugShowCheckedModeBanner: false,
       home: HomePage(),
     );

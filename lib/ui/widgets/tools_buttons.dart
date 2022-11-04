@@ -75,7 +75,7 @@ class ToolsButtons extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              const SizedBox(height: 16),
+              if (displayStrokeSlider) const SizedBox(height: 16),
               if (displayStrokeSlider) _strokeImageSlider(),
               const SizedBox(height: 16),
               _backgroundColorPickerBtn(),

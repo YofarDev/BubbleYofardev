@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   String? _bubbleMovingUuid;
   late Color _background;
   late double _strokeImage;
+  bool _creatingBubble = false;
 
   @override
   void initState() {
@@ -96,9 +97,11 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.all(64),
                           // ignore: use_decorated_box
                           child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(width: _strokeImage),
-                            ),
+                            decoration: _strokeImage == 0
+                                ? null
+                                : BoxDecoration(
+                                    border: Border.all(width: _strokeImage),
+                                  ),
                             child: Image.memory(_image!),
                           ),
                         ),
@@ -248,6 +251,31 @@ class _HomePageState extends State<HomePage> {
         bubble.talkingPoint = details.position;
         bubble.hasTalkingShape = true;
       });
+    } else {
+      if (!_creatingBubble) {
+        _bubbleUuid = const Uuid().v4();
+        final Bubble bubble = Bubble(
+          uuid: _bubbleUuid,
+          body: _textController.text,
+          isRound: _isRoundBubble,
+          isYellowBg: _isYellowBg,
+          position: details.position,
+          font: _font,
+          fontSize: _fontSize,
+        );
+
+        _bubbles.add(bubble);
+
+        setState(() {
+          _creatingBubble = true;
+        });
+      } else {
+        final Bubble bubble = _bubbles
+            .firstWhere((Bubble element) => element.uuid == _bubbleUuid);
+        setState(() {
+          bubble.position = details.position;
+        });
+      }
     }
   }
 
@@ -270,20 +298,8 @@ class _HomePageState extends State<HomePage> {
         );
       });
     } else {
-      _bubbleUuid = const Uuid().v4();
-      final Bubble bubble = Bubble(
-        uuid: _bubbleUuid,
-        body: _textController.text,
-        isRound: _isRoundBubble,
-        isYellowBg: _isYellowBg,
-        position: details.position,
-        font: _font,
-        fontSize: _fontSize,
-      );
-
-      _bubbles.add(bubble);
+      _creatingBubble = false;
     }
-
     setState(() {
       if (_isRoundBubble) _bubbleTalkingPointMode = true;
     });
@@ -332,7 +348,8 @@ class _HomePageState extends State<HomePage> {
   void _onSavePressed() async {
     if (kIsWeb) {
       final String filename = "bubbles_${DateTime.now()}";
-      final Uint8List? bytes = await _screenshotController.capture();
+      final Uint8List? bytes =
+          await _screenshotController.capture(pixelRatio: 2);
       if (bytes != null) SaveFileWeb.saveImage(bytes, filename);
       SaveFileWeb.saveCsv(_bubbles, filename);
     }
@@ -347,7 +364,6 @@ class _HomePageState extends State<HomePage> {
   void _onBubbleModeCheckboxPressed(bool value) {
     setState(() {
       _isRoundBubble = value;
-      _fontSize = _isRoundBubble ? 18 : 20;
       if (_isRoundBubble) _isYellowBg = false;
     });
   }
@@ -465,10 +481,10 @@ class _HomePageState extends State<HomePage> {
     _isMovingModeEnabled = false;
     _isRoundBubble = true;
     _font = Constants.availableFonts.first;
-    _fontSize = 20;
+    _fontSize = 16;
     _bubbleTalkingPointMode = false;
     _widthBaseTriangle = 10;
-    _background = Colors.white;
+    _background = const Color.fromARGB(0, 255, 255, 255);
     _strokeImage = 0;
     _bubbles.clear();
     setState(() {});
