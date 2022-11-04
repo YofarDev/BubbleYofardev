@@ -27,6 +27,9 @@ class ToolsButtons extends StatelessWidget {
   final bool displayRemoveBtn;
   final Function() onConfirmBubblePressed;
   final Function() onBackgroundColorPickerPressed;
+  final Function(double value) onStrokeChanged;
+  final bool displayStrokeSlider;
+  final double strokeImage;
 
   const ToolsButtons({
     super.key,
@@ -52,6 +55,9 @@ class ToolsButtons extends StatelessWidget {
     required this.displayRemoveBtn,
     required this.onConfirmBubblePressed,
     required this.onBackgroundColorPickerPressed,
+    required this.onStrokeChanged,
+    required this.displayStrokeSlider,
+    required this.strokeImage,
   });
 
   @override
@@ -69,20 +75,22 @@ class ToolsButtons extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              if (displayStrokeSlider) _strokeImageSlider(),
+              const SizedBox(height: 16),
               _backgroundColorPickerBtn(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               _fontPicker(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               _fontSizePicker(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               _getCheckbox(
                 context,
                 'Round bubble',
                 onBubbleModelCheckboxPressed,
                 isBubbleMode,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
               _getCheckbox(
                 context,
                 'Yellow background',
@@ -90,7 +98,7 @@ class ToolsButtons extends StatelessWidget {
                 isYellowBg,
                 color: AppColors.yellow,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
               _getCheckbox(
                 context,
                 'Moving mode',
@@ -121,14 +129,6 @@ class ToolsButtons extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  if (displayConfirmBubble) _sliderWidthBaseTriangle(),
-                  if (displayConfirmBubble)
-                    _floatingBtn(
-                      Icons.check,
-                      'Confirm bubble',
-                      onConfirmBubblePressed,
-                      color: AppColors.yellow,
-                    ),
                   if (displayRemoveBtn)
                     _floatingBtn(
                       Icons.delete,
@@ -145,7 +145,21 @@ class ToolsButtons extends StatelessWidget {
                   const SizedBox(width: 16),
                   _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
                 ],
-              )
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (displayConfirmBubble) _sliderWidthBaseTriangle(),
+                  if (displayConfirmBubble)
+                    _floatingBtn(
+                      Icons.check,
+                      'Confirm bubble',
+                      onConfirmBubblePressed,
+                      color: AppColors.yellow,
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -174,6 +188,24 @@ class ToolsButtons extends StatelessWidget {
         onChanged: (dynamic value) => onFontChanged(value as String),
       );
 
+  Widget _strokeImageSlider() => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(
+            width: 150,
+            child: Slider(
+              divisions: 16,
+              max: 16,
+              activeColor: AppColors.primary,
+              inactiveColor: AppColors.primaryTransparent,
+              value: strokeImage,
+              onChanged: onStrokeChanged,
+            ),
+          ),
+          Text("Stroke image : $strokeImage")
+        ],
+      );
+
   Widget _getCheckbox(
     BuildContext context,
     String txt,
@@ -200,7 +232,7 @@ class ToolsButtons extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           SizedBox(
-            width: 100,
+            width: 150,
             child: Slider(
               activeColor: AppColors.primary,
               inactiveColor: AppColors.primaryTransparent,
@@ -208,7 +240,7 @@ class ToolsButtons extends StatelessWidget {
               onChanged: onFontSizedChanged,
               min: 10,
               max: 80,
-              divisions: 80 - 10,
+              divisions: 80,
             ),
           ),
           Text("Font size : $fontSize"),
@@ -229,13 +261,16 @@ class ToolsButtons extends StatelessWidget {
         child: Icon(icon),
       );
 
-  Widget _sliderWidthBaseTriangle() => Slider(
-        value: widthBaseTriangle,
-        onChanged: onWidthBaseTriangleChanged,
-        min: 4,
-        max: 40,
-        activeColor: AppColors.yellow,
-        inactiveColor: AppColors.yellowTransparent,
+  Widget _sliderWidthBaseTriangle() => SizedBox(
+        width: 100,
+        child: Slider(
+          value: widthBaseTriangle,
+          onChanged: onWidthBaseTriangleChanged,
+          min: 4,
+          max: 40,
+          activeColor: AppColors.yellow,
+          inactiveColor: AppColors.yellowTransparent,
+        ),
       );
 
 //////////////////////////////// LISTENERS ////////////////////////////////

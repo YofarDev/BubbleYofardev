@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   late double _widthBaseTriangle;
   String? _bubbleMovingUuid;
   late Color _background;
+  late double _strokeImage;
 
   @override
   void initState() {
@@ -93,7 +94,13 @@ class _HomePageState extends State<HomePage> {
                         alignment: Alignment.topLeft,
                         child: Padding(
                           padding: const EdgeInsets.all(64),
-                          child: Image.memory(_image!),
+                          // ignore: use_decorated_box
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: _strokeImage),
+                            ),
+                            child: Image.memory(_image!),
+                          ),
                         ),
                       ),
                     // ..._bubbles,
@@ -165,7 +172,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _textField() => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: 16),
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -194,7 +201,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buttons() => Align(
         alignment: Alignment.bottomRight,
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(16),
           child: ToolsButtons(
             onLoadImagePressed: _onLoadImagePressed,
             onLoadDialogsCsvPressed: _onLoadCsvPressed,
@@ -218,6 +225,9 @@ class _HomePageState extends State<HomePage> {
             widthBaseTriangle: _widthBaseTriangle,
             onWidthBaseTriangleChanged: _onWidthBaseTriangle,
             onBackgroundColorPickerPressed: _onBackgroundColorPickerPressed,
+            displayStrokeSlider: _image != null,
+            onStrokeChanged: _onStrokeImageChanged,
+            strokeImage: _strokeImage,
           ),
         ),
       );
@@ -348,6 +358,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onStrokeImageChanged(double value) {
+    setState(() {
+      _strokeImage = value;
+    });
+  }
+
   void _onBackgroundColorPickerPressed() {
     showDialog(
       context: context,
@@ -453,6 +469,7 @@ class _HomePageState extends State<HomePage> {
     _bubbleTalkingPointMode = false;
     _widthBaseTriangle = 10;
     _background = Colors.white;
+    _strokeImage = 0;
     _bubbles.clear();
     setState(() {});
   }
