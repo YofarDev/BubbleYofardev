@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   final ScreenshotController _screenshotController = ScreenshotController();
   Uint8List? _image;
   late bool _isYellowBg;
-  late bool _isMovingModeEnabled;
+  late bool _isEditMode;
   late bool _isRoundBubble;
   late String _font;
   late double _fontSize;
@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
           maxZoomHeight: MediaQuery.of(context).size.height,
           backgroundColor: _background,
           initScale: 0.5,
-          enableScroll: _isMovingModeEnabled,
+          enableScroll: _isEditMode,
           canvasColor: _background,
           child: Listener(
             onPointerUp: (PointerUpEvent e) {
@@ -129,10 +129,6 @@ class _HomePageState extends State<HomePage> {
             child: MeasuredSize(
               onChange: (Size size) {
                 setState(() {
-                  item.centerPoint = Offset(
-                    item.position.dx + size.width / 2,
-                    item.position.dy + size.height / 2,
-                  );
                   item.bubbleSize = size;
                 });
               },
@@ -142,8 +138,7 @@ class _HomePageState extends State<HomePage> {
                 font: item.font,
                 fontSize: item.fontSize,
                 isRoundBubble: item.isRound,
-                movingMode:
-                    _isMovingModeEnabled && item.uuid == _bubbleMovingUuid,
+                movingMode: _isEditMode && item.uuid == _bubbleMovingUuid,
               ),
             ),
           ),
@@ -157,8 +152,7 @@ class _HomePageState extends State<HomePage> {
               sizeBubble: item.bubbleSize!,
               widthBaseTriangle: item.bubbleSize!.width /
                   (item.widthBaseTriangle ?? _widthBaseTriangle),
-              movingMode:
-                  _isMovingModeEnabled && item.uuid == _bubbleMovingUuid,
+              movingMode: _isEditMode && item.uuid == _bubbleMovingUuid,
             )
         ],
       ),
@@ -204,7 +198,7 @@ class _HomePageState extends State<HomePage> {
             onResetPressed: _onResetPressed,
             onMoveModeCheckboxPressed: _onMovingModeCheckboxPressed,
             onYellowBgCheckboxPressed: _onYellowBgCheckboxPressed,
-            isMoveModeEnabled: _isMovingModeEnabled,
+            isMoveModeEnabled: _isEditMode,
             isYellowBg: _isYellowBg,
             font: _font,
             onFontChanged: _onFontChanged,
@@ -232,68 +226,73 @@ class _HomePageState extends State<HomePage> {
   void _onScreenPressing(
     PointerMoveEvent details,
   ) {
-    if (_isMovingModeEnabled) {
+    // Edit mode
+    if (_isEditMode) {
       _moveOldBubble(details.position);
       return;
     }
-    if (_bubbleTalkingPointMode) {
+
+    // Bubble talking point
+    if (_bubbleTalkingPointMode && !_creatingBubble) {
+      _moveTalkingPoint(details.position);
+      return;
+    }
+
+    // Bubble init
+    if (!_creatingBubble) {
+      _bubbleUuid = const Uuid().v4();
+      final Bubble bubble = Bubble(
+        uuid: _bubbleUuid,
+        body: _textController.text,
+        isRound: _isRoundBubble,
+        isYellowBg: _isYellowBg,
+        position: details.position,
+        font: _font,
+        fontSize: _fontSize,
+      );
+
+      _bubbles.add(bubble);
+
+      setState(() {
+        _creatingBubble = true;
+      });
+
+      // Bubble moving
+    } else {
       final Bubble bubble =
           _bubbles.firstWhere((Bubble element) => element.uuid == _bubbleUuid);
+
       setState(() {
-        bubble.talkingPoint = details.position;
-        bubble.hasTalkingShape = true;
+        bubble.position = details.position;
       });
-    } else {
-      if (!_creatingBubble) {
-        _bubbleUuid = const Uuid().v4();
-        final Bubble bubble = Bubble(
-          uuid: _bubbleUuid,
-          body: _textController.text,
-          isRound: _isRoundBubble,
-          isYellowBg: _isYellowBg,
-          position: details.position,
-          font: _font,
-          fontSize: _fontSize,
-        );
-
-        _bubbles.add(bubble);
-
-        setState(() {
-          _creatingBubble = true;
-        });
-      } else {
-        final Bubble bubble = _bubbles
-            .firstWhere((Bubble element) => element.uuid == _bubbleUuid);
-        setState(() {
-          bubble.position = details.position;
-        });
-      }
     }
   }
 
   void _onScreenPressed(
     PointerUpEvent details,
   ) {
-    if (_isMovingModeEnabled) {
+    if (_isEditMode) {
       return;
     }
-    if (_bubbleTalkingPointMode) {
+
+    // After creating talking point
+    if (_bubbleTalkingPointMode && !_creatingBubble) {
+      _moveTalkingPoint(details.position, isPressing: false);
+    }
+
+    // After creating a bubble
+    if (_creatingBubble) {
+      if (_isRoundBubble) _bubbleTalkingPointMode = true;
       final Bubble bubble =
           _bubbles.firstWhere((Bubble element) => element.uuid == _bubbleUuid);
-      setState(() {
-        bubble.talkingPoint = details.position;
-        bubble.hasTalkingShape = true;
-        bubble.relativeTalkingPoint = Offset(
-          bubble.position.dx - bubble.talkingPoint!.dx,
-          bubble.position.dy - bubble.talkingPoint!.dy,
+      if (bubble.bubbleSize != null) {
+        bubble.centerPoint = Offset(
+          bubble.position.dx + bubble.bubbleSize!.width / 2,
+          bubble.position.dy + bubble.bubbleSize!.height / 2,
         );
-      });
-    } else {
+      }
       _creatingBubble = false;
     }
-    setState(() {
-      if (_isRoundBubble) _bubbleTalkingPointMode = true;
-    });
   }
 
   void _onCancelLastPressed() {
@@ -413,7 +412,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _onRemoveImageBtnPressed(){
+  void _onRemoveImageBtnPressed() {
     setState(() {
       _image = null;
     });
@@ -427,7 +426,7 @@ class _HomePageState extends State<HomePage> {
 
   void _onMovingModeCheckboxPressed(bool value) {
     setState(() {
-      _isMovingModeEnabled = value;
+      _isEditMode = value;
       _bubbleTalkingPointMode = false;
       if (!value) {
         _bubbleMovingUuid = null;
@@ -459,7 +458,6 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
-    //   _initVariables();
   }
 
   void _onRemoveBubblePressed() {
@@ -471,7 +469,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onBubbleTap(Bubble bubble) {
-    if (!_isMovingModeEnabled) return;
+    if (!_isEditMode) return;
     setState(() {
       _bubbleMovingUuid = bubble.uuid;
       _textController.text = bubble.body;
@@ -483,7 +481,7 @@ class _HomePageState extends State<HomePage> {
   void _initVariables() {
     _image = null;
     _isYellowBg = false;
-    _isMovingModeEnabled = false;
+    _isEditMode = false;
     _isRoundBubble = true;
     _font = Constants.availableFonts.first;
     _fontSize = 16;
@@ -510,9 +508,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _moveTalkingPoint(Offset position, {bool isPressing = true}) {
+    final Bubble bubble =
+        _bubbles.firstWhere((Bubble element) => element.uuid == _bubbleUuid);
+    setState(() {
+      bubble.talkingPoint = position;
+      bubble.hasTalkingShape = true;
+    });
+
+    if (!isPressing) {
+      bubble.relativeTalkingPoint = Offset(
+        bubble.position.dx - bubble.talkingPoint!.dx,
+        bubble.position.dy - bubble.talkingPoint!.dy,
+      );
+    }
+  }
+
   void _listenerTextField() {
     _textController.addListener(() {
-      if (!_isMovingModeEnabled) return;
+      if (!_isEditMode) return;
       final Bubble bubble = _bubbles
           .firstWhere((Bubble element) => element.uuid == _bubbleMovingUuid);
       setState(() {
