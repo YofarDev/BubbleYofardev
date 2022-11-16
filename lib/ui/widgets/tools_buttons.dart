@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 
 import '../../res/app_colors.dart';
 import '../../utils/constants.dart';
@@ -31,6 +33,8 @@ class ToolsButtons extends StatelessWidget {
   final bool hasImage;
   final double strokeImage;
   final Function() onRemoveImageBtnPressed;
+  final bool centerImage;
+  final Function(bool? value) onCenterImagePressed;
 
   const ToolsButtons({
     super.key,
@@ -60,6 +64,8 @@ class ToolsButtons extends StatelessWidget {
     required this.hasImage,
     required this.strokeImage,
     required this.onRemoveImageBtnPressed,
+    required this.centerImage,
+    required this.onCenterImagePressed,
   });
 
   @override
@@ -77,15 +83,15 @@ class ToolsButtons extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
+              if (hasImage) _centerImageCheckbox(context),
+              const SizedBox(height: 16),
               if (hasImage)
                 _button(
                   "Remove image",
                   onRemoveImageBtnPressed,
-                  color: AppColors.yellow,
+                  color: Colors.red[400],
                 ),
-              if (hasImage) const SizedBox(height: 16),
               if (hasImage) _strokeImageSlider(),
-              if (hasImage) const SizedBox(height: 16),
               _button("Background color", onBackgroundColorPickerPressed),
               const SizedBox(height: 16),
               _fontPicker(),
@@ -125,13 +131,11 @@ class ToolsButtons extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   _floatingBtn(
-                    Icons.restart_alt,
-                    'Reset all',
-                    onResetPressed,
-                    color: Colors.red[400],
+                    Icons.image,
+                    'Load image',
+                    onLoadImagePressed,
+                    color: AppColors.yellow,
                   ),
-                  const SizedBox(width: 16),
-                  _floatingBtn(Icons.image, 'Load image', onLoadImagePressed),
                   const SizedBox(width: 16),
                   _floatingBtn(
                     Icons.file_copy,
@@ -144,13 +148,12 @@ class ToolsButtons extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  if (displayRemoveBtn)
-                    _floatingBtn(
-                      Icons.delete,
-                      'Remove bubble',
-                      onRemovedPressed,
-                      color: AppColors.yellow,
-                    ),
+                  _floatingBtn(
+                    Icons.restart_alt,
+                    'Restore default settings',
+                    onResetPressed,
+                    color: Colors.red[400],
+                  ),
                   const SizedBox(width: 16),
                   _floatingBtn(
                     Icons.subdirectory_arrow_left,
@@ -166,6 +169,14 @@ class ToolsButtons extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    if (displayRemoveBtn)
+                      _floatingBtn(
+                        Icons.delete,
+                        'Remove bubble',
+                        onRemovedPressed,
+                        color: AppColors.yellow,
+                      ),
+                    const SizedBox(width: 16),
                     _sliderWidthBaseTriangle(),
                     _floatingBtn(
                       Icons.check,
@@ -175,6 +186,7 @@ class ToolsButtons extends StatelessWidget {
                     ),
                   ],
                 ),
+              _contact(context),
             ],
           ),
         ),
@@ -204,23 +216,30 @@ class ToolsButtons extends StatelessWidget {
         onChanged: (dynamic value) => onFontChanged(value as String),
       );
 
-  Widget _strokeImageSlider() => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(
-            width: 150,
-            child: Slider(
-              divisions: 16,
-              max: 16,
-              activeColor: AppColors.primary,
-              inactiveColor: AppColors.primaryTransparent,
-              value: strokeImage,
-              onChanged: onStrokeChanged,
+  Widget _strokeImageSlider() => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(
+              width: 150,
+              child: Slider(
+                divisions: 16,
+                max: 16,
+                activeColor: AppColors.primary,
+                inactiveColor: AppColors.primaryTransparent,
+                value: strokeImage,
+                onChanged: onStrokeChanged,
+              ),
             ),
-          ),
-          Text("Stroke image : $strokeImage")
-        ],
+            Text("Stroke image : $strokeImage")
+          ],
+        ),
       );
+
+  Widget _centerImageCheckbox(BuildContext context) =>
+      _getCheckbox(context, "Center image", onCenterImagePressed, centerImage,
+          color: AppColors.yellow);
 
   Widget _getCheckbox(
     BuildContext context,
@@ -255,8 +274,8 @@ class ToolsButtons extends StatelessWidget {
               value: fontSize,
               onChanged: onFontSizedChanged,
               min: 10,
-              max: 80,
-              divisions: 80,
+              max: 40,
+              divisions: 40,
             ),
           ),
           Text("Font size : $fontSize"),
@@ -289,7 +308,33 @@ class ToolsButtons extends StatelessWidget {
         ),
       );
 
+  Widget _contact(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 32),
+        child: ParsedText(
+          text: "Contact : yofardev@gmail.com",
+          style: const TextStyle(fontSize: 12),
+          parse: <MatchText>[
+            MatchText(
+              type: ParsedType.EMAIL,
+              style: const TextStyle(fontSize: 12, color: Colors.blue),
+              onTap: (String email) => _onEmailTap(
+                context,
+                email,
+              ),
+            )
+          ],
+        ),
+      );
+
 //////////////////////////////// LISTENERS ////////////////////////////////
+
+  void _onEmailTap(BuildContext context, String email) {
+    Clipboard.setData(ClipboardData(text: email)).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email address copied to clipboard")),
+      );
+    });
+  }
 
 //////////////////////////////// FUNCTIONS ////////////////////////////////
 }

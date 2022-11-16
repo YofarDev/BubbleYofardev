@@ -16,6 +16,7 @@ import '../res/app_colors.dart';
 import '../utils/constants.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
+import 'widgets/bubble_text_field.dart';
 import 'widgets/talking_triangle_of_bubble.dart';
 import 'widgets/tools_buttons.dart';
 
@@ -43,6 +44,9 @@ class _HomePageState extends State<HomePage> {
   late Color _background;
   late double _strokeImage;
   bool _creatingBubble = false;
+  late double _maxWidthBubble;
+  late bool _setMaxWidthBubble;
+  late bool _centerImage;
 
   @override
   void initState() {
@@ -58,7 +62,14 @@ class _HomePageState extends State<HomePage> {
         fit: StackFit.expand,
         children: <Widget>[
           _screenshotableCanvas(),
-          _textField(),
+          BubbleTextField(
+            font: _font,
+            controller: _textController,
+            setMaxWidthBubble: _setMaxWidthBubble,
+            onMaxWidthBubbleChanged: _onMaxWidthBubbleChanged,
+            onSetMaxWidthBubbleChanged: _onSetMaxWidthBubbleChanged,
+            maxWidthBubble: _maxWidthBubble,
+          ),
           _buttons(),
         ],
       ),
@@ -93,7 +104,9 @@ class _HomePageState extends State<HomePage> {
                   children: <Widget>[
                     if (_image != null)
                       Align(
-                        alignment: Alignment.topLeft,
+                        alignment: _centerImage
+                            ? Alignment.topCenter
+                            : Alignment.topLeft,
                         child: Padding(
                           padding: const EdgeInsets.all(64),
                           // ignore: use_decorated_box
@@ -139,6 +152,7 @@ class _HomePageState extends State<HomePage> {
                 fontSize: item.fontSize,
                 isRoundBubble: item.isRound,
                 movingMode: _isEditMode && item.uuid == _bubbleMovingUuid,
+                widthBubble: item.maxWidthBubble,
               ),
             ),
           ),
@@ -158,33 +172,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget _textField() => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(),
-              color: AppColors.greyTransparent,
-            ),
-            width: 300,
-            height: 60,
-            child: TextField(
-              maxLines: 3,
-              controller: _textController,
-              cursorColor: Colors.black,
-              style: TextStyle(fontFamily: _font),
-              decoration: const InputDecoration(
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
-              ),
-            ),
-          ),
-        ),
-      );
 
   Widget _buttons() => Align(
         alignment: Alignment.bottomRight,
@@ -217,6 +204,8 @@ class _HomePageState extends State<HomePage> {
             onStrokeChanged: _onStrokeImageChanged,
             strokeImage: _strokeImage,
             onRemoveImageBtnPressed: _onRemoveImageBtnPressed,
+            centerImage: _centerImage,
+            onCenterImagePressed: _onCenterImagePressed,
           ),
         ),
       );
@@ -249,6 +238,7 @@ class _HomePageState extends State<HomePage> {
         position: details.position,
         font: _font,
         fontSize: _fontSize,
+        maxWidthBubble: _setMaxWidthBubble ? _maxWidthBubble : null,
       );
 
       _bubbles.add(bubble);
@@ -317,6 +307,7 @@ class _HomePageState extends State<HomePage> {
     final FilePickerResult? result = await FilePicker.platform
         .pickFiles(allowedExtensions: <String>['csv'], type: FileType.custom);
     if (result != null) {
+      _centerImage = result.files.single.name.contains('_centeredImage');
       final String csv = utf8.decode(result.files.single.bytes!);
       final List<String> rows = csv.split("\n");
       final List<Bubble> list = <Bubble>[];
@@ -336,13 +327,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onSavePressed() async {
-    if (kIsWeb) {
-      final String filename = "bubbles_${DateTime.now()}";
-      final Uint8List? bytes =
-          await _screenshotController.capture(pixelRatio: 2);
-      if (bytes != null) SaveFileWeb.saveImage(bytes, filename);
-      SaveFileWeb.saveCsv(_bubbles, filename);
-    }
+    final String uuid = const Uuid().v4();
+    final String filename = "bubble_yofardev_$uuid";
+
+    final Uint8List? bytes = await _screenshotController.capture(pixelRatio: 2);
+    if (bytes != null) SaveFileWeb.saveImage(bytes, filename);
+    SaveFileWeb.saveCsv(_bubbles, filename);
   }
 
   void _onYellowBgCheckboxPressed(bool value) {
@@ -424,6 +414,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onCenterImagePressed(bool? value) {
+    setState(() {
+      _centerImage = !_centerImage;
+    });
+  }
+
   void _onMovingModeCheckboxPressed(bool value) {
     setState(() {
       _isEditMode = value;
@@ -439,7 +435,9 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          content: const Text("Reset all?"),
+          content: const Text(
+            "Restore default settings?\n\n(keep the image and the bubbles)",
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -476,10 +474,24 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onMaxWidthBubbleChanged(double maxWidth) {
+    setState(() {
+      _maxWidthBubble = maxWidth.toInt().toDouble();
+    });
+  }
+
+  void _onSetMaxWidthBubbleChanged(bool? value) {
+    setState(() {
+      _setMaxWidthBubble = !_setMaxWidthBubble;
+      if (!_setMaxWidthBubble) {
+        _maxWidthBubble = 300;
+      }
+    });
+  }
+
 //////////////////////////////// FUNCTIONS ////////////////////////////////
 
   void _initVariables() {
-    _image = null;
     _isYellowBg = false;
     _isEditMode = false;
     _isRoundBubble = true;
@@ -489,7 +501,10 @@ class _HomePageState extends State<HomePage> {
     _widthBaseTriangle = 10;
     _background = const Color.fromARGB(0, 255, 255, 255);
     _strokeImage = 0;
-    _bubbles.clear();
+    _creatingBubble = false;
+    _maxWidthBubble = 300;
+    _setMaxWidthBubble = true;
+    _centerImage = false;
     setState(() {});
   }
 

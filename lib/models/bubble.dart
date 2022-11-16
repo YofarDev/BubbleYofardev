@@ -15,6 +15,7 @@ class Bubble {
   Size? bubbleSize;
   double? widthBaseTriangle;
   late Offset relativeTalkingPoint;
+  double? maxWidthBubble;
   Bubble({
     required this.uuid,
     required this.body,
@@ -28,6 +29,7 @@ class Bubble {
     this.centerPoint,
     this.bubbleSize,
     this.widthBaseTriangle,
+    this.maxWidthBubble,
   });
 
   Map<String, dynamic> toMap() {
@@ -44,24 +46,8 @@ class Bubble {
       'centerPoint': centerPoint,
       'bubbleSize': bubbleSize,
       'widthBaseTriangle': widthBaseTriangle,
+      'maxWidthBubble': maxWidthBubble,
     };
-  }
-
-  factory Bubble.fromMap(Map<String, dynamic> map) {
-    return Bubble(
-      uuid: map['uuid'] as String,
-      body: map['body'] as String,
-      isRound: map['isRound'] as bool,
-      isYellowBg: map['isYellowBg'] as bool,
-      position: map['position'] as Offset,
-      font: map['font'] as String,
-      fontSize: map['fontSize'] as double,
-      hasTalkingShape: map['hasTalkingShape'] as bool,
-      talkingPoint: map['talkingPoint'] as Offset?,
-      centerPoint: map['centerPoint'] as Offset?,
-      bubbleSize: map['bubbleSize'] as Size,
-      widthBaseTriangle: map['widthBaseTriangle'] as double,
-    );
   }
 
   factory Bubble.fromCsv(
@@ -69,7 +55,7 @@ class Bubble {
   ) {
     return Bubble(
       uuid: row[0],
-      body: row[1],
+      body: row[1].replaceAll('[[NL]]', '\n'),
       isRound: row[2] == 'true',
       isYellowBg: row[3] == 'true',
       position: row[4].toOffset()!,
@@ -80,12 +66,13 @@ class Bubble {
       centerPoint: row[9].toOffset(),
       bubbleSize: row[10].toSize(),
       widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
+      maxWidthBubble: row[12] != 'null' ? double.parse(row[12]) : null,
     );
   }
 
   @override
   String toString() {
-    return '$uuid;$body;$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle';
+    return '$uuid;${body.replaceAll('\n','[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble';
   }
 }
 
