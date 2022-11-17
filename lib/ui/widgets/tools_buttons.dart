@@ -160,8 +160,9 @@ class ToolsButtons extends StatelessWidget {
                     'Cancel last',
                     onCancelLastPressed,
                   ),
-                  const SizedBox(width: 16),
-                  _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
+                  if (!displayConfirmBubble) const SizedBox(width: 16),
+                  if (!displayConfirmBubble)
+                    _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
                 ],
               ),
               if (displayConfirmBubble) const SizedBox(height: 16),

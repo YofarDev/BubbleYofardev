@@ -39,6 +39,7 @@ dependencies:
   flutter_colorpicker:
   # Zoom widget
   zoom_widget:
+  image:
 
 
 dev_dependencies:

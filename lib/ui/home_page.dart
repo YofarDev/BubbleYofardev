@@ -12,7 +12,6 @@ import 'package:uuid/uuid.dart';
 import 'package:zoom_widget/zoom_widget.dart';
 
 import '../models/bubble.dart';
-import '../res/app_colors.dart';
 import '../utils/constants.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
@@ -28,6 +27,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey _imageKey = GlobalKey();
+
   final List<Bubble> _bubbles = <Bubble>[];
   final TextEditingController _textController = TextEditingController();
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -78,15 +79,15 @@ class _HomePageState extends State<HomePage> {
 
 //////////////////////////////// WIDGETS ////////////////////////////////
 
-  Widget _screenshotableCanvas() => Screenshot<dynamic>(
-        controller: _screenshotController,
-        child: Zoom(
-          maxZoomWidth: MediaQuery.of(context).size.width,
-          maxZoomHeight: MediaQuery.of(context).size.height,
-          backgroundColor: _background,
-          initScale: 0.5,
-          enableScroll: _isEditMode,
-          canvasColor: _background,
+  Widget _screenshotableCanvas() => Zoom(
+        maxZoomWidth: MediaQuery.of(context).size.width,
+        maxZoomHeight: MediaQuery.of(context).size.height,
+        backgroundColor: _background,
+        initScale: 0.5,
+        enableScroll: _isEditMode,
+        canvasColor: _background,
+        child: Screenshot<dynamic>(
+          controller: _screenshotController,
           child: Listener(
             onPointerUp: (PointerUpEvent e) {
               _onScreenPressed(e);
@@ -111,6 +112,7 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.all(64),
                           // ignore: use_decorated_box
                           child: Container(
+                            key: _imageKey,
                             decoration: _strokeImage == 0
                                 ? null
                                 : BoxDecoration(
@@ -272,7 +274,11 @@ class _HomePageState extends State<HomePage> {
 
     // After creating a bubble
     if (_creatingBubble) {
-      if (_isRoundBubble) _bubbleTalkingPointMode = true;
+      if (_isRoundBubble) {
+        setState(() {
+          _bubbleTalkingPointMode = true;
+        });
+      }
       final Bubble bubble =
           _bubbles.firstWhere((Bubble element) => element.uuid == _bubbleUuid);
       if (bubble.bubbleSize != null) {
@@ -331,8 +337,12 @@ class _HomePageState extends State<HomePage> {
     final String filename = "bubble_yofardev_$uuid";
 
     final Uint8List? bytes = await _screenshotController.capture(pixelRatio: 2);
-    if (bytes != null) SaveFileWeb.saveImage(bytes, filename);
-    SaveFileWeb.saveCsv(_bubbles, filename);
+    if (bytes != null) {
+      SaveFileWeb.saveImage(bytes, filename);
+    }
+    if (_bubbles.isNotEmpty) {
+      SaveFileWeb.saveCsv(_bubbles, filename);
+    }
   }
 
   void _onYellowBgCheckboxPressed(bool value) {
@@ -548,5 +558,77 @@ class _HomePageState extends State<HomePage> {
         bubble.body = _textController.text;
       });
     });
+  }
+
+  Rect? _getAreaToScreenshot() {
+    Rect? area;
+    if (_image != null) {
+      final RenderBox? renderBox =
+          _imageKey.currentContext?.findRenderObject() as RenderBox?;
+
+      if (renderBox != null) {
+        final Size size = renderBox.size;
+        final Offset offset = renderBox.localToGlobal(Offset.zero);
+        area = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
+      }
+    } else {
+      if (_bubbles.isEmpty) return area;
+      area = Rect.fromLTWH(
+        _bubbles.first.position.dx,
+        _bubbles.first.position.dy,
+        _bubbles.first.bubbleSize!.width,
+        _bubbles.first.bubbleSize!.height,
+      );
+    }
+    for (final Bubble b in _bubbles) {
+      final Rect bubbleRect = Rect.fromLTWH(
+        b.position.dx,
+        b.position.dy,
+        b.bubbleSize!.width,
+        b.bubbleSize!.height,
+      );
+      area = _getAreaAroundEverywhere(area!, bubbleRect);
+      if (b.talkingPoint != null) {
+        final Rect talkingPoint = Rect.fromCenter(
+          center: Offset(
+            b.talkingPoint!.dx,
+            b.talkingPoint!.dy,
+          ),
+          width: 0,
+          height: 0,
+        );
+
+        area = _getAreaAroundEverywhere(area, talkingPoint);
+      }
+    }
+
+    return area;
+  }
+
+  Rect _getAreaAroundEverywhere(Rect area, Rect rect) {
+    double? left;
+    double? top;
+    double? right;
+    double? bottom;
+
+    if (rect.left < area.left) {
+      left = rect.left;
+    }
+    if (rect.top < area.top) {
+      top = rect.top;
+    }
+    if (rect.right > area.right) {
+      right = rect.right;
+    }
+    if (rect.bottom > area.bottom) {
+      bottom = rect.bottom;
+    }
+
+    return Rect.fromLTRB(
+      left ?? area.left,
+      top ?? area.top,
+      right ?? area.right,
+      bottom ?? area.bottom,
+    );
   }
 }
