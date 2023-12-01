@@ -233,14 +233,14 @@ class ToolsButtons extends StatelessWidget {
                 onChanged: onStrokeChanged,
               ),
             ),
-            Text("Stroke image : $strokeImage")
+            Text("Stroke image : $strokeImage"),
           ],
         ),
       );
 
   Widget _centerImageCheckbox(BuildContext context) =>
       _getCheckbox(context, "Center image", onCenterImagePressed, centerImage,
-          color: AppColors.yellow);
+          color: AppColors.yellow,);
 
   Widget _getCheckbox(
     BuildContext context,
@@ -290,6 +290,7 @@ class ToolsButtons extends StatelessWidget {
     Color? color,
   }) =>
       FloatingActionButton(
+        foregroundColor: Colors.white,
         onPressed: onPressed,
         heroTag: tag,
         tooltip: tag,
@@ -322,7 +323,7 @@ class ToolsButtons extends StatelessWidget {
                 context,
                 email,
               ),
-            )
+            ),
           ],
         ),
       );

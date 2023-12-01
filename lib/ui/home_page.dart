@@ -3,15 +3,16 @@
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:measured_size/measured_size.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zoom_widget/zoom_widget.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../models/bubble.dart';
+import '../res/app_colors.dart';
 import '../utils/constants.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
@@ -72,6 +73,7 @@ class _HomePageState extends State<HomePage> {
             maxWidthBubble: _maxWidthBubble,
           ),
           _buttons(),
+          if (_image == null) _youtubeFrame(),
         ],
       ),
     );
@@ -79,53 +81,93 @@ class _HomePageState extends State<HomePage> {
 
 //////////////////////////////// WIDGETS ////////////////////////////////
 
-  Widget _screenshotableCanvas() => Zoom(
-        maxZoomWidth: MediaQuery.of(context).size.width,
-        maxZoomHeight: MediaQuery.of(context).size.height,
-        backgroundColor: _background,
-        initScale: 0.5,
-        enableScroll: _isEditMode,
-        canvasColor: _background,
-        child: Screenshot<dynamic>(
-          controller: _screenshotController,
-          child: Listener(
-            onPointerUp: (PointerUpEvent e) {
-              _onScreenPressed(e);
-            },
-            onPointerMove: (PointerMoveEvent e) {
-              _onScreenPressing(e);
-            },
-            child: ColoredBox(
-              color: _background,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    if (_image != null)
-                      Align(
-                        alignment: _centerImage
-                            ? Alignment.topCenter
-                            : Alignment.topLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.all(64),
-                          // ignore: use_decorated_box
-                          child: Container(
-                            key: _imageKey,
-                            decoration: _strokeImage == 0
-                                ? null
-                                : BoxDecoration(
-                                    border: Border.all(width: _strokeImage),
-                                  ),
-                            child: Image.memory(_image!),
-                          ),
+  Widget _youtubeFrame() => Column(
+        children: <Widget>[
+          const Padding(
+            padding: EdgeInsets.only(top: 32, bottom: 16),
+            child: Text(
+              "Quick youtube presentation :",
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 18,
+              ),
+            ),
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: SizedBox(
+              child: Container(
+                decoration: BoxDecoration(border: Border.all()),
+                width: 600,
+                child: YoutubePlayer(
+                  controller: YoutubePlayerController.fromVideoId(
+                    videoId: 'F8dt5BEC8as',
+                    params:
+                        const YoutubePlayerParams(showFullscreenButton: true),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 64),
+          _centeredLoadBtn(),
+        ],
+      );
+
+  Widget _centeredLoadBtn() => Center(
+        child: InkWell(
+          onTap: _onLoadImagePressed,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.yellowTransparent,
+              border: Border.all(),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text("Load an image"),
+          ),
+        ),
+      );
+
+  Widget _screenshotableCanvas() => Screenshot(
+        controller: _screenshotController,
+        child: Listener(
+          onPointerUp: (PointerUpEvent e) {
+            _onScreenPressed(e);
+          },
+          onPointerMove: (PointerMoveEvent e) {
+            _onScreenPressing(e);
+          },
+          child: ColoredBox(
+            color: _background,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  if (_image != null)
+                    Align(
+                      alignment: _centerImage
+                          ? Alignment.topCenter
+                          : Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(64),
+                        // ignore: use_decorated_box
+                        child: Container(
+                          key: _imageKey,
+                          decoration: _strokeImage == 0
+                              ? null
+                              : BoxDecoration(
+                                  border: Border.all(width: _strokeImage),
+                                ),
+                          child: Image.memory(_image!),
                         ),
                       ),
-                    // ..._bubbles,
-                    ..._bubbles.map((Bubble item) => _getBubble(item)),
-                  ],
-                ),
+                    ),
+                  // ..._bubbles,
+                  ..._bubbles.map((Bubble item) => _getBubble(item)),
+                ],
               ),
             ),
           ),
@@ -169,7 +211,7 @@ class _HomePageState extends State<HomePage> {
               widthBaseTriangle: item.bubbleSize!.width /
                   (item.widthBaseTriangle ?? _widthBaseTriangle),
               movingMode: _isEditMode && item.uuid == _bubbleMovingUuid,
-            )
+            ),
         ],
       ),
     );
@@ -560,75 +602,5 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Rect? _getAreaToScreenshot() {
-    Rect? area;
-    if (_image != null) {
-      final RenderBox? renderBox =
-          _imageKey.currentContext?.findRenderObject() as RenderBox?;
 
-      if (renderBox != null) {
-        final Size size = renderBox.size;
-        final Offset offset = renderBox.localToGlobal(Offset.zero);
-        area = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
-      }
-    } else {
-      if (_bubbles.isEmpty) return area;
-      area = Rect.fromLTWH(
-        _bubbles.first.position.dx,
-        _bubbles.first.position.dy,
-        _bubbles.first.bubbleSize!.width,
-        _bubbles.first.bubbleSize!.height,
-      );
-    }
-    for (final Bubble b in _bubbles) {
-      final Rect bubbleRect = Rect.fromLTWH(
-        b.position.dx,
-        b.position.dy,
-        b.bubbleSize!.width,
-        b.bubbleSize!.height,
-      );
-      area = _getAreaAroundEverywhere(area!, bubbleRect);
-      if (b.talkingPoint != null) {
-        final Rect talkingPoint = Rect.fromCenter(
-          center: Offset(
-            b.talkingPoint!.dx,
-            b.talkingPoint!.dy,
-          ),
-          width: 0,
-          height: 0,
-        );
-
-        area = _getAreaAroundEverywhere(area, talkingPoint);
-      }
-    }
-
-    return area;
-  }
-
-  Rect _getAreaAroundEverywhere(Rect area, Rect rect) {
-    double? left;
-    double? top;
-    double? right;
-    double? bottom;
-
-    if (rect.left < area.left) {
-      left = rect.left;
-    }
-    if (rect.top < area.top) {
-      top = rect.top;
-    }
-    if (rect.right > area.right) {
-      right = rect.right;
-    }
-    if (rect.bottom > area.bottom) {
-      bottom = rect.bottom;
-    }
-
-    return Rect.fromLTRB(
-      left ?? area.left,
-      top ?? area.top,
-      right ?? area.right,
-      bottom ?? area.bottom,
-    );
-  }
 }
