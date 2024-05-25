@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:measured_size/measured_size.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -83,16 +84,41 @@ class _HomePageState extends State<HomePage> {
 
   Widget _youtubeFrame() => Column(
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.only(top: 32, bottom: 16),
-            child: Text(
-              "Quick youtube presentation :",
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18,
-              ),
+          const SizedBox(height: 16),
+          InkWell(
+            onTap: () {
+              launchUrl(
+                Uri.parse('https://github.com/YofarDev/BubbleYofardev'),
+              );
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  'assets/github_logo.png',
+                  width: 30,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  "Code source of the project",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue,
+                  ),
+                ),
+              ],
             ),
           ),
+          const Text(
+            "Quick youtube presentation :",
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: SizedBox(
@@ -601,6 +627,4 @@ class _HomePageState extends State<HomePage> {
       });
     });
   }
-
-
 }

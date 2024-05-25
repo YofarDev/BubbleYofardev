@@ -29,7 +29,7 @@ dependencies:
   # Screenshot
   screenshot:
   # File picker
-  file_picker: ^5.0.1
+  file_picker: ^8.0.3
   universal_io:
   # Parsed text
   flutter_parsed_text:
@@ -41,13 +41,14 @@ dependencies:
   image:
   # Youtube player
   youtube_player_iframe:
+  url_launcher_windows: ^3.1.1
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
