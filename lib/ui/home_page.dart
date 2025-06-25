@@ -14,22 +14,19 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../logic/canvas_cubit.dart';
 import '../models/bubble.dart';
-import '../res/app_colors.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
 import 'widgets/bubble_text_field.dart';
 import 'widgets/talking_triangle_of_bubble.dart';
 import 'widgets/tools_buttons.dart';
+import 'widgets/transparent_grid.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<CanvasCubit>(
-      create: (_) => CanvasCubit()..init(),
-      child: const _HomeView(),
-    );
+    return const _HomeView();
   }
 }
 
@@ -53,6 +50,7 @@ class _HomeViewState extends State<_HomeView> {
           return Stack(
             fit: StackFit.expand,
             children: <Widget>[
+              const TransparentGrid(),
               _screenshotableCanvas(state),
               BubbleTextField(
                 font: state.font,
@@ -132,8 +130,14 @@ class _HomeViewState extends State<_HomeView> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text("Update 25/06/2025 : Code refactoring",
-              style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+                color: Colors.greenAccent.withAlpha(50),
+                borderRadius: BorderRadius.circular(8)),
+            child: const Text("Update 25/06/2025 : Code refactoring",
+                style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
+          ),
           const SizedBox(height: 64),
           _centeredLoadBtn(),
         ],
@@ -143,13 +147,18 @@ class _HomeViewState extends State<_HomeView> {
         child: InkWell(
           onTap: _onLoadImagePressed,
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.yellowTransparent,
+              color: const Color.fromARGB(255, 255, 204, 0),
               border: Border.all(),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text("Load an image"),
+            child: const Column(
+              children: <Widget>[
+                Icon(Icons.image, color: Colors.white),
+                Text("Load an image", style: TextStyle(color: Colors.white)),
+              ],
+            ),
           ),
         ),
       );
@@ -341,6 +350,7 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   void _onBackgroundColorPickerPressed() {
+    context.read<CanvasCubit>().hideYoutubeFrame();
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(

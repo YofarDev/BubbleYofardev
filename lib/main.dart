@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'logic/canvas_cubit.dart';
 import 'ui/home_page.dart';
 
 void main() {
@@ -11,10 +13,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: "Bubble Yofardev",
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
+    return BlocProvider<CanvasCubit>(
+      create: (_) => CanvasCubit()..init(),
+      child: const MaterialApp(
+        title: "Bubble Yofardev",
+        debugShowCheckedModeBanner: false,
+        home: HomePage(),
+      ),
     );
   }
 }

@@ -154,6 +154,10 @@ class CanvasCubit extends Cubit<CanvasState> {
     emit(state.copyWith(strokeImage: value, bubbleTalkingPointMode: false));
   }
 
+  void hideYoutubeFrame() {
+    emit(state.copyWith(isEmpty: false));
+  }
+
   void changeBackgroundColor(Color value) {
     emit(state.copyWith(background: value, bubbleTalkingPointMode: false));
   }

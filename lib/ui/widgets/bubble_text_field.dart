@@ -46,7 +46,7 @@ class BubbleTextField extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(width: 2),
-          color: AppColors.greyTransparent,
+          color: Colors.white,
         ),
         child: TextField(
           keyboardType: TextInputType.multiline,
@@ -92,5 +92,4 @@ class BubbleTextField extends StatelessWidget {
         inactiveColor: AppColors.yellowTransparent,
         max: MediaQuery.of(context).size.width - 128,
       );
-
 }

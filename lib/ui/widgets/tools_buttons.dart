@@ -74,7 +74,7 @@ class ToolsButtons extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(),
         borderRadius: BorderRadius.circular(20),
-        color: AppColors.greyTransparent,
+        color: Colors.white,
       ),
       child: SingleChildScrollView(
         child: Padding(
@@ -238,9 +238,13 @@ class ToolsButtons extends StatelessWidget {
         ),
       );
 
-  Widget _centerImageCheckbox(BuildContext context) =>
-      _getCheckbox(context, "Center image", onCenterImagePressed, centerImage,
-          color: AppColors.yellow,);
+  Widget _centerImageCheckbox(BuildContext context) => _getCheckbox(
+        context,
+        "Center image",
+        onCenterImagePressed,
+        centerImage,
+        color: AppColors.yellow,
+      );
 
   Widget _getCheckbox(
     BuildContext context,
