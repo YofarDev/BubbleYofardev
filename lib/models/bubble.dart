@@ -1,22 +1,23 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:ui';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart';
 
-class Bubble {
-  String uuid;
-  String body;
-  bool isRound;
-  bool isYellowBg;
-  Offset position;
-  String font;
-  double fontSize;
-  bool hasTalkingShape;
-  Offset? talkingPoint;
-  Offset? centerPoint;
-  Size? bubbleSize;
-  double? widthBaseTriangle;
-  late Offset relativeTalkingPoint;
-  double? maxWidthBubble;
-  Bubble({
+class Bubble extends Equatable {
+  final String uuid;
+  final String body;
+  final bool isRound;
+  final bool isYellowBg;
+  final Offset position;
+  final String font;
+  final double fontSize;
+  final bool hasTalkingShape;
+  final Offset? talkingPoint;
+  final Offset? centerPoint;
+  final Size? bubbleSize;
+  final double? widthBaseTriangle;
+  final Offset? relativeTalkingPoint;
+  final double? maxWidthBubble;
+  const Bubble({
     required this.uuid,
     required this.body,
     required this.isRound,
@@ -30,6 +31,7 @@ class Bubble {
     this.bubbleSize,
     this.widthBaseTriangle,
     this.maxWidthBubble,
+    this.relativeTalkingPoint,
   });
 
   Map<String, dynamic> toMap() {
@@ -67,12 +69,68 @@ class Bubble {
       bubbleSize: row[10].toSize(),
       widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
       maxWidthBubble: row[12] != 'null' ? double.parse(row[12]) : null,
+      relativeTalkingPoint: row[13].toOffset(),
     );
   }
 
   @override
   String toString() {
-    return '$uuid;${body.replaceAll('\n','[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble';
+    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()}';
+  }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props {
+    return <Object?>[
+      uuid,
+      body,
+      isRound,
+      isYellowBg,
+      position,
+      font,
+      fontSize,
+      hasTalkingShape,
+      talkingPoint,
+      centerPoint,
+      bubbleSize,
+      widthBaseTriangle,
+      relativeTalkingPoint,
+      maxWidthBubble,
+    ];
+  }
+
+  Bubble copyWith({
+    String? uuid,
+    String? body,
+    bool? isRound,
+    bool? isYellowBg,
+    Offset? position,
+    String? font,
+    double? fontSize,
+    bool? hasTalkingShape,
+    Offset? talkingPoint,
+    Offset? centerPoint,
+    Size? bubbleSize,
+    double? widthBaseTriangle,
+    Offset? relativeTalkingPoint,
+    double? maxWidthBubble,
+  }) {
+    return Bubble(
+      uuid: uuid ?? this.uuid,
+      body: body ?? this.body,
+      isRound: isRound ?? this.isRound,
+      isYellowBg: isYellowBg ?? this.isYellowBg,
+      position: position ?? this.position,
+      font: font ?? this.font,
+      fontSize: fontSize ?? this.fontSize,
+      hasTalkingShape: hasTalkingShape ?? this.hasTalkingShape,
+      talkingPoint: talkingPoint ?? this.talkingPoint,
+      centerPoint: centerPoint ?? this.centerPoint,
+      bubbleSize: bubbleSize ?? this.bubbleSize,
+      widthBaseTriangle: widthBaseTriangle ?? this.widthBaseTriangle,
+      relativeTalkingPoint: relativeTalkingPoint ?? this.relativeTalkingPoint,
+      maxWidthBubble: maxWidthBubble ?? this.maxWidthBubble,
+    );
   }
 }
 

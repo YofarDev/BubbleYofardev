@@ -77,7 +77,8 @@ class BubbleTextField extends StatelessWidget {
               activeColor: AppColors.yellow,
             ),
             if (setMaxWidthBubble) _widthBubbleSlider(context),
-            if (setMaxWidthBubble) Text("$maxWidthBubble"),
+            if (setMaxWidthBubble)
+              Text("${maxWidthBubble?.toStringAsFixed(0)}"),
           ],
         ),
       );
@@ -92,7 +93,4 @@ class BubbleTextField extends StatelessWidget {
         max: MediaQuery.of(context).size.width - 128,
       );
 
-//////////////////////////////// LISTENERS ////////////////////////////////
-
-//////////////////////////////// FUNCTIONS ////////////////////////////////
 }

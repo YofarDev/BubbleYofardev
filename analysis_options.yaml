@@ -1,9 +1,5 @@
 include: package:lint/analysis_options.yaml
 
-analyzer: 
-  exclude: 
-  #  - lib/ui/admin/temp_page.dart
-
 linter:
   rules:
     # ------ Disable individual rules ----- #
@@ -43,7 +39,13 @@ linter:
 
     avoid_void_async: false
 
-    prefer_relative_imports: true
     always_use_package_imports: false
+    prefer_relative_imports: true
+    avoid_relative_lib_imports: false
+   
+    use_function_type_syntax_for_parameters: true
+    use_rethrow_when_possible: true
 
-    avoid_dynamic_calls: false
+    use_build_context_synchronously: false
+
+    eol_at_end_of_file: false

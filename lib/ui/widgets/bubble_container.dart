@@ -27,7 +27,7 @@ class BubbleContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxWidth: widthBubble ?? double.infinity),
+      width: widthBubble,
       padding: EdgeInsets.symmetric(
         horizontal: isRoundBubble ? 12 : 8,
         vertical: isRoundBubble ? 8 : 4,
