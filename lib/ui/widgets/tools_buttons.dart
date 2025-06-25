@@ -5,20 +5,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 
 import '../../logic/canvas_cubit.dart';
-import '../../models/bubble.dart';
 import '../../res/app_colors.dart';
 import '../../utils/constants.dart';
 import 'bubble_shape_picker.dart';
+import 'load_image_button.dart';
+import 'tools_icon_button.dart';
 
 class ToolsButtons extends StatelessWidget {
-  final Function() onLoadImagePressed;
   final Function() onLoadDialogsCsvPressed;
   final Function() onSavePressed;
   final Function() onBackgroundColorPickerPressed;
 
   const ToolsButtons({
     super.key,
-    required this.onLoadImagePressed,
     required this.onLoadDialogsCsvPressed,
     required this.onSavePressed,
     required this.onBackgroundColorPickerPressed,
@@ -98,17 +97,14 @@ class ToolsButtons extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  _floatingBtn(
-                    Icons.image,
-                    'Load image',
-                    onLoadImagePressed,
-                    color: AppColors.yellow,
+                  const LoadImageButton(
+                    iconOnly: true,
                   ),
                   const SizedBox(width: 16),
-                  _floatingBtn(
-                    Icons.file_copy,
-                    'Load previous csv',
-                    onLoadDialogsCsvPressed,
+                  ToolsIconButton(
+                    icon: Icons.file_copy,
+                    tag: 'Load previous csv',
+                    onPressed: onLoadDialogsCsvPressed,
                   ),
                 ],
               ),
@@ -116,46 +112,55 @@ class ToolsButtons extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  _floatingBtn(
-                    Icons.restart_alt,
-                    'Restore default settings',
-                    () => context.read<CanvasCubit>().init(),
+                  ToolsIconButton(
+                    icon: Icons.restart_alt,
+                    tag: 'Restore default settings',
+                    onPressed: context.read<CanvasCubit>().init,
                     color: Colors.red[400],
                   ),
                   const SizedBox(width: 16),
-                  _floatingBtn(
-                    Icons.subdirectory_arrow_left,
-                    'Cancel last',
-                    context.read<CanvasCubit>().cancelLastBubble,
+                  ToolsIconButton(
+                    icon: Icons.subdirectory_arrow_left,
+                    tag: 'Cancel last',
+                    onPressed: context.read<CanvasCubit>().cancelLastBubble,
                   ),
                   if (!state.bubbleTalkingPointMode) const SizedBox(width: 16),
                   if (!state.bubbleTalkingPointMode)
-                    _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
+                    ToolsIconButton(
+                        icon: Icons.save,
+                        tag: 'Save png + csv',
+                        onPressed: onSavePressed),
                 ],
               ),
-              if (state.bubbleTalkingPointMode) const SizedBox(height: 16),
-              if (state.bubbleTalkingPointMode)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    if (state.bubbleMovingUuid != null)
-                      _floatingBtn(
-                        Icons.delete,
-                        'Remove bubble',
-                        context.read<CanvasCubit>().removeBubble,
+              if (state.bubbleTalkingPointMode || state.isEditMode)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ToolsIconButton(
+                        icon: Icons.delete,
+                        tag: 'Remove bubble',
+                        onPressed: context.read<CanvasCubit>().removeBubble,
                         color: AppColors.yellow,
                       ),
-                    const SizedBox(width: 16),
-                    _sliderWidthBaseTriangle(context, state),
-                    _floatingBtn(
-                      Icons.check,
-                      'Confirm bubble',
-                      context.read<CanvasCubit>().confirmBubble,
-                      color: AppColors.yellow,
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      _sliderWidthBaseTriangle(context, state),
+                      ToolsIconButton(
+                        icon: Icons.check,
+                        tag: 'Confirm bubble',
+                        onPressed: context.read<CanvasCubit>().confirmBubble,
+                        color: AppColors.yellow,
+                      ),
+                    ],
+                  ),
                 ),
               _contact(context),
+              const SizedBox(height: 8),
+              if (state.packageInfo != null)
+                Text(
+                    "v${state.packageInfo!.version} (${state.packageInfo!.buildNumber})",
+                    style: const TextStyle(color: Colors.grey, fontSize: 9)),
             ],
           ),
         ),
@@ -173,20 +178,6 @@ class ToolsButtons extends StatelessWidget {
           tag,
           style: const TextStyle(color: Colors.white),
         ),
-      );
-
-  Widget _bubbleTypePicker(BuildContext context, CanvasState state) =>
-      ToggleButtons(
-        isSelected: BubbleType.values
-            .map((BubbleType e) => e == state.selectedBubbleType)
-            .toList(),
-        onPressed: (int index) => context
-            .read<CanvasCubit>()
-            .changeBubbleType(BubbleType.values[index]),
-        children: const <Widget>[
-          Icon(Icons.chat_bubble),
-          Icon(Icons.cloud),
-        ],
       );
 
   Widget _fontPicker(BuildContext context, CanvasState state) =>
@@ -275,21 +266,6 @@ class ToolsButtons extends StatelessWidget {
         ],
       );
 
-  Widget _floatingBtn(
-    IconData icon,
-    String tag,
-    Function() onPressed, {
-    Color? color,
-  }) =>
-      FloatingActionButton(
-        foregroundColor: Colors.white,
-        onPressed: onPressed,
-        heroTag: tag,
-        tooltip: tag,
-        backgroundColor: color ?? AppColors.primary,
-        child: Icon(icon),
-      );
-
   Widget _sliderWidthBaseTriangle(BuildContext context, CanvasState state) =>
       SizedBox(
         width: 100,
@@ -321,8 +297,6 @@ class ToolsButtons extends StatelessWidget {
         ),
       );
 
-//////////////////////////////// LISTENERS ////////////////////////////////
-
   void _onEmailTap(BuildContext context, String email) {
     Clipboard.setData(ClipboardData(text: email)).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -330,6 +304,4 @@ class ToolsButtons extends StatelessWidget {
       );
     });
   }
-
-//////////////////////////////// FUNCTIONS ////////////////////////////////
 }

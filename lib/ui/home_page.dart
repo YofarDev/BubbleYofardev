@@ -9,8 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:measured_size/measured_size.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../logic/canvas_cubit.dart';
 import '../models/bubble.dart';
@@ -22,6 +20,7 @@ import 'widgets/thought_bubble/thought_bubble.dart';
 import 'widgets/thought_bubble/thought_bubble_tail.dart';
 import 'widgets/tools_buttons.dart';
 import 'widgets/transparent_grid.dart';
+import 'widgets/welcome_panel.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -71,103 +70,13 @@ class _HomeViewState extends State<_HomeView> {
                   maxWidthBubble: state.maxWidthBubble,
                 ),
               _buttons(state),
-              if (state.isEmpty) _youtubeFrame(),
+              if (state.isEmpty) const WelcomePanel(),
             ],
           );
         },
       ),
     );
   }
-
-  //////////////////////////////// WIDGETS ////////////////////////////////
-
-  Widget _youtubeFrame() => Column(
-        children: <Widget>[
-          const SizedBox(height: 16),
-          InkWell(
-            onTap: () {
-              launchUrl(
-                Uri.parse('https://github.com/YofarDev/BubbleYofardev'),
-              );
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'assets/github_logo.png',
-                  width: 30,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "Code source of the project",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Text(
-            "Quick youtube presentation :",
-            style: TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: SizedBox(
-              child: Container(
-                decoration: BoxDecoration(border: Border.all()),
-                width: 600,
-                child: YoutubePlayer(
-                  controller: YoutubePlayerController.fromVideoId(
-                    videoId: 'F8dt5BEC8as',
-                    params:
-                        const YoutubePlayerParams(showFullscreenButton: true),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-                color: Colors.greenAccent.withAlpha(50),
-                borderRadius: BorderRadius.circular(8)),
-            child: const Text(
-                "Update 25/06/2025 : Code refactoring + small UI changes",
-                style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
-          ),
-          const SizedBox(height: 64),
-          _centeredLoadBtn(),
-        ],
-      );
-
-  Widget _centeredLoadBtn() => Center(
-        child: InkWell(
-          onTap: _onLoadImagePressed,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 255, 204, 0),
-              border: Border.all(),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Column(
-              children: <Widget>[
-                Icon(Icons.image, color: Colors.white),
-                Text("Load an image", style: TextStyle(color: Colors.white)),
-              ],
-            ),
-          ),
-        ),
-      );
 
   Widget _screenshotableCanvas(CanvasState state) => Screenshot(
         controller: _screenshotController,
@@ -307,7 +216,6 @@ class _HomeViewState extends State<_HomeView> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ToolsButtons(
-            onLoadImagePressed: _onLoadImagePressed,
             onLoadDialogsCsvPressed: _onLoadCsvPressed,
             onSavePressed: _onSavePressed,
             onBackgroundColorPickerPressed: _onBackgroundColorPickerPressed,
@@ -316,14 +224,6 @@ class _HomeViewState extends State<_HomeView> {
       );
 
   //////////////////////////////// LISTENERS ////////////////////////////////
-
-  void _onLoadImagePressed() async {
-    final FilePickerResult? result =
-        await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result != null) {
-      context.read<CanvasCubit>().loadImage(result.files.single.bytes!);
-    }
-  }
 
   void _onLoadCsvPressed() async {
     final FilePickerResult? result = await FilePicker.platform
@@ -339,8 +239,8 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   void _onSavePressed() async {
-    const String filename = "bubble_yofardev";
-
+    final String filename =
+        "BubbleYofardev_${DateTime.now().millisecondsSinceEpoch}";
     final Uint8List? bytes = await _screenshotController.capture(pixelRatio: 2);
     if (bytes != null) {
       SaveFileWeb.saveImage(bytes, filename);
@@ -378,14 +278,10 @@ class _HomeViewState extends State<_HomeView> {
 Offset _getIntersectionPoint(Offset center, Offset end, Size size) {
   final double dx = end.dx - center.dx;
   final double dy = end.dy - center.dy;
-
   final double halfWidth = size.width / 2;
   final double halfHeight = size.height / 2;
-
   final double tx = halfWidth / dx.abs();
   final double ty = halfHeight / dy.abs();
-
   final double t = tx < ty ? tx : ty;
-
   return Offset(center.dx + t * dx, center.dy + t * dy);
 }

@@ -21,6 +21,7 @@ class CanvasState extends Equatable {
   final bool centerImage;
   final Offset? dragOffset;
   final BubbleType selectedBubbleType;
+  final PackageInfo? packageInfo;
 
   const CanvasState({
     this.isEmpty = true,
@@ -43,6 +44,7 @@ class CanvasState extends Equatable {
     this.setMaxWidthBubble = false,
     this.centerImage = false,
     this.dragOffset,
+    this.packageInfo,
   });
 
   CanvasState copyWith({
@@ -67,6 +69,7 @@ class CanvasState extends Equatable {
     bool? clearImage,
     Offset? dragOffset,
     BubbleType? selectedBubbleType,
+    PackageInfo? packageInfo,
   }) {
     return CanvasState(
       isEmpty: isEmpty ?? this.isEmpty,
@@ -90,6 +93,7 @@ class CanvasState extends Equatable {
       setMaxWidthBubble: setMaxWidthBubble ?? this.setMaxWidthBubble,
       centerImage: centerImage ?? this.centerImage,
       dragOffset: dragOffset ?? this.dragOffset,
+      packageInfo: packageInfo ?? this.packageInfo,
     );
   }
 
@@ -115,6 +119,7 @@ class CanvasState extends Equatable {
         centerImage,
         dragOffset,
         selectedBubbleType,
+        packageInfo
       ];
 
 

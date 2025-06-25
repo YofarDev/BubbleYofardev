@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/bubble.dart';
@@ -30,6 +31,12 @@ class CanvasCubit extends Cubit<CanvasState> {
         centerImage: false,
       ),
     );
+    _getPackageInfo();
+  }
+
+  void _getPackageInfo() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    emit(state.copyWith(packageInfo: packageInfo));
   }
 
   void loadImage(Uint8List imageBytes) {
