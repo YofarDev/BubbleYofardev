@@ -2,7 +2,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
-enum BubbleType { talk, thought, scream }
+enum BubbleType { talk, thought}
 
 class Bubble extends Equatable {
   final BubbleType type;
@@ -75,13 +75,14 @@ class Bubble extends Equatable {
       widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
       maxWidthBubble: row[12] != 'null' ? double.parse(row[12]) : null,
       relativeTalkingPoint: row[13].toOffset(),
-      type: row.length > 14 ? BubbleType.values.byName(row[14]) : BubbleType.talk,
+      type:
+          row.length > 14 ? BubbleType.values.byName(row[14]) : BubbleType.talk,
     );
   }
 
   @override
   String toString() {
-    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()};${type.name}';
+    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()};${type.name};';
   }
 
   @override

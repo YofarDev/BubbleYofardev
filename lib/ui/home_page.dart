@@ -15,6 +15,7 @@ import '../models/bubble.dart';
 import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
 import 'widgets/bubble_text_field.dart';
+import 'widgets/scream_bubble/scream_bubble.dart';
 import 'widgets/talking_triangle_of_bubble.dart';
 import 'widgets/thought_bubble/thought_bubble.dart';
 import 'widgets/thought_bubble/thought_bubble_tail.dart';
@@ -160,27 +161,7 @@ class _HomeViewState extends State<_HomeView> {
             onChange: (Size size) {
               context.read<CanvasCubit>().updateBubbleSize(item.uuid, size);
             },
-            child: item.type == BubbleType.thought
-                ? ThoughtBubble(
-                    movingMode:
-                        state.isEditMode && item.uuid == state.bubbleMovingUuid,
-                    child: Text(
-                      item.body,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: item.font, fontSize: item.fontSize),
-                    ),
-                  )
-                : BubbleContainer(
-                    isYellowBg: item.isYellowBg,
-                    txt: item.body,
-                    font: item.font,
-                    fontSize: item.fontSize,
-                    isRoundBubble: item.isRound,
-                    movingMode:
-                        state.isEditMode && item.uuid == state.bubbleMovingUuid,
-                    widthBubble: item.maxWidthBubble,
-                  ),
+            child: _buildBubbleContent(item, state),
           ),
         ),
         if (item.bubbleSize != null &&
@@ -196,7 +177,7 @@ class _HomeViewState extends State<_HomeView> {
               movingMode:
                   state.isEditMode && item.uuid == state.bubbleMovingUuid,
             )
-          else
+          else if (item.type == BubbleType.thought)
             ThoughtBubbleTail(
               start: _getIntersectionPoint(
                 item.centerPoint!,
@@ -222,6 +203,39 @@ class _HomeViewState extends State<_HomeView> {
           ),
         ),
       );
+
+  Widget _buildBubbleContent(Bubble item, CanvasState state) {
+    switch (item.type) {
+      case BubbleType.thought:
+        return ThoughtBubble(
+          movingMode: state.isEditMode && item.uuid == state.bubbleMovingUuid,
+          child: Text(
+            item.body,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontFamily: item.font, fontSize: item.fontSize),
+          ),
+        );
+    //   case BubbleType.scream:
+    //     return ScreamBubble(
+    //  //    movingMode: state.isEditMode && item.uuid == state.bubbleMovingUuid,
+    //       child: Text(
+    //         item.body,
+    //         textAlign: TextAlign.center,
+    //         style: TextStyle(fontFamily: item.font, fontSize: item.fontSize),
+    //       ),
+    //     );
+      case BubbleType.talk:
+        return BubbleContainer(
+          isYellowBg: item.isYellowBg,
+          txt: item.body,
+          font: item.font,
+          fontSize: item.fontSize,
+          isRoundBubble: item.isRound,
+          movingMode: state.isEditMode && item.uuid == state.bubbleMovingUuid,
+          widthBubble: item.maxWidthBubble,
+        );
+    }
+  }
 
   //////////////////////////////// LISTENERS ////////////////////////////////
 

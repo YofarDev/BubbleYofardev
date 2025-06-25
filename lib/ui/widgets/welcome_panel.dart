@@ -68,7 +68,7 @@ class WelcomePanel extends StatelessWidget {
               color: Colors.greenAccent.withAlpha(50),
               borderRadius: BorderRadius.circular(8)),
           child: const Text(
-              "Update 25/06/2025 : Code refactoring + small UI changes",
+              "Update 25/06/2025 : Code refactoring + Thought bubble + small UI changes",
               style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
         ),
         const SizedBox(height: 64),

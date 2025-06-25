@@ -138,28 +138,29 @@ class ToolsButtons extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      ToolsIconButton(
-                        icon: Icons.delete,
-                        tag: 'Remove bubble',
-                        onPressed: context.read<CanvasCubit>().removeBubble,
-                        color: AppColors.yellow,
-                      ),
-                      const SizedBox(width: 16),
-                      _sliderWidthBaseTriangle(context, state),
-                      ToolsIconButton(
-                        icon: Icons.check,
-                        tag: 'Confirm bubble',
-                        onPressed: context.read<CanvasCubit>().confirmBubble,
-                        color: AppColors.yellow,
-                      ),
+                      if (state.isEditMode)
+                        ToolsIconButton(
+                          icon: Icons.delete,
+                          tag: 'Remove bubble',
+                          onPressed: context.read<CanvasCubit>().removeBubble,
+                          color: AppColors.yellow,
+                        ),
+                      if (!state.isEditMode && state.isTalkBubble)
+                        _sliderWidthBaseTriangle(context, state),
+                      if (!state.isEditMode)
+                        ToolsIconButton(
+                          icon: Icons.check,
+                          tag: 'Confirm bubble',
+                          onPressed: context.read<CanvasCubit>().confirmBubble,
+                          color: AppColors.yellow,
+                        ),
                     ],
                   ),
                 ),
               _contact(context),
               const SizedBox(height: 8),
               if (state.packageInfo != null)
-                Text(
-                    "v${state.packageInfo!.version} (${state.packageInfo!.buildNumber})",
+                Text("v${state.packageInfo!.version}",
                     style: const TextStyle(color: Colors.grey, fontSize: 9)),
             ],
           ),

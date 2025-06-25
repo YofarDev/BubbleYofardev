@@ -47,7 +47,7 @@ class _CheckerboardPainter extends CustomPainter {
 
     for (int y = 0; y < verticalCount; y++) {
       for (int x = 0; x < horizontalCount; x++) {
-        final Paint paint = (x + y) % 2 == 0 ? lightPaint : darkPaint;
+        final Paint paint = (x + y).isEven ? lightPaint : darkPaint;
 
         final Rect rect = Rect.fromLTWH(
           x * squareSize,

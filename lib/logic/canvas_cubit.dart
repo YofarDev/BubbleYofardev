@@ -69,6 +69,7 @@ class CanvasCubit extends Cubit<CanvasState> {
       fontSize: state.fontSize,
       maxWidthBubble: state.setMaxWidthBubble ? state.maxWidthBubble : null,
     );
+
     final List<Bubble> bubbles = <Bubble>[...state.bubbles, newBubble];
     emit(
       state.copyWith(
@@ -110,7 +111,7 @@ class CanvasCubit extends Cubit<CanvasState> {
       emit(
         state.copyWith(
           creatingBubble: false,
-          bubbleTalkingPointMode: state.isRoundBubble,
+          bubbleTalkingPointMode: true,
           bubbles: updatedBubbles,
         ),
       );
@@ -161,7 +162,7 @@ class CanvasCubit extends Cubit<CanvasState> {
   void changeBubbleType(BubbleType type) {
     if (type == BubbleType.thought) {
       emit(state.copyWith(selectedBubbleType: type, isRoundBubble: true));
-    } else {
+    }  else {
       emit(state.copyWith(selectedBubbleType: type));
     }
   }
