@@ -52,6 +52,7 @@ class CanvasCubit extends Cubit<CanvasState> {
 
   void startCreatingBubble(Offset position, String text) {
     final Bubble newBubble = Bubble(
+      type: state.selectedBubbleType,
       uuid: const Uuid().v4(),
       body: text,
       isRound: state.isRoundBubble,
@@ -148,6 +149,14 @@ class CanvasCubit extends Cubit<CanvasState> {
 
   void changeWidthBaseTriangle(double value) {
     emit(state.copyWith(widthBaseTriangle: value));
+  }
+
+  void changeBubbleType(BubbleType type) {
+    if (type == BubbleType.thought) {
+      emit(state.copyWith(selectedBubbleType: type, isRoundBubble: true));
+    } else {
+      emit(state.copyWith(selectedBubbleType: type));
+    }
   }
 
   void changeStrokeImage(double value) {

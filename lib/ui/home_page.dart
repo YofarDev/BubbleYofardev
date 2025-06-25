@@ -18,6 +18,8 @@ import '../utils/save_file_web.dart';
 import 'widgets/bubble_container.dart';
 import 'widgets/bubble_text_field.dart';
 import 'widgets/talking_triangle_of_bubble.dart';
+import 'widgets/thought_bubble/thought_bubble.dart';
+import 'widgets/thought_bubble/thought_bubble_tail.dart';
 import 'widgets/tools_buttons.dart';
 import 'widgets/transparent_grid.dart';
 
@@ -52,19 +54,22 @@ class _HomeViewState extends State<_HomeView> {
             children: <Widget>[
               const TransparentGrid(),
               _screenshotableCanvas(state),
-              BubbleTextField(
-                font: state.font,
-                controller: _textController,
-                setMaxWidthBubble: state.setMaxWidthBubble,
-                onMaxWidthBubbleChanged:
-                    context.read<CanvasCubit>().changeMaxWidthBubble,
-                onSetMaxWidthBubbleChanged: (bool? value) {
-                  if (value != null) {
-                    context.read<CanvasCubit>().toggleSetMaxWidthBubble(value);
-                  }
-                },
-                maxWidthBubble: state.maxWidthBubble,
-              ),
+              if (!state.isEditMode)
+                BubbleTextField(
+                  font: state.font,
+                  controller: _textController,
+                  setMaxWidthBubble: state.setMaxWidthBubble,
+                  onMaxWidthBubbleChanged:
+                      context.read<CanvasCubit>().changeMaxWidthBubble,
+                  onSetMaxWidthBubbleChanged: (bool? value) {
+                    if (value != null) {
+                      context
+                          .read<CanvasCubit>()
+                          .toggleSetMaxWidthBubble(value);
+                    }
+                  },
+                  maxWidthBubble: state.maxWidthBubble,
+                ),
               _buttons(state),
               if (state.isEmpty) _youtubeFrame(),
             ],
@@ -135,7 +140,8 @@ class _HomeViewState extends State<_HomeView> {
             decoration: BoxDecoration(
                 color: Colors.greenAccent.withAlpha(50),
                 borderRadius: BorderRadius.circular(8)),
-            child: const Text("Update 25/06/2025 : Code refactoring",
+            child: const Text(
+                "Update 25/06/2025 : Code refactoring + small UI changes",
                 style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
           ),
           const SizedBox(height: 64),
@@ -151,7 +157,7 @@ class _HomeViewState extends State<_HomeView> {
             decoration: BoxDecoration(
               color: const Color.fromARGB(255, 255, 204, 0),
               border: Border.all(),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: const Column(
               children: <Widget>[
@@ -245,29 +251,53 @@ class _HomeViewState extends State<_HomeView> {
             onChange: (Size size) {
               context.read<CanvasCubit>().updateBubbleSize(item.uuid, size);
             },
-            child: BubbleContainer(
-              isYellowBg: item.isYellowBg,
-              txt: item.body,
-              font: item.font,
-              fontSize: item.fontSize,
-              isRoundBubble: item.isRound,
-              movingMode:
-                  state.isEditMode && item.uuid == state.bubbleMovingUuid,
-              widthBubble: item.maxWidthBubble,
-            ),
+            child: item.type == BubbleType.thought
+                ? ThoughtBubble(
+                    movingMode:
+                        state.isEditMode && item.uuid == state.bubbleMovingUuid,
+                    child: Text(
+                      item.body,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: item.font, fontSize: item.fontSize),
+                    ),
+                  )
+                : BubbleContainer(
+                    isYellowBg: item.isYellowBg,
+                    txt: item.body,
+                    font: item.font,
+                    fontSize: item.fontSize,
+                    isRoundBubble: item.isRound,
+                    movingMode:
+                        state.isEditMode && item.uuid == state.bubbleMovingUuid,
+                    widthBubble: item.maxWidthBubble,
+                  ),
           ),
         ),
         if (item.bubbleSize != null &&
             item.centerPoint != null &&
             item.talkingPoint != null)
-          TalkingTriangleOfBubble(
-            center: item.centerPoint!,
-            talkingPoint: item.talkingPoint!,
-            sizeBubble: item.bubbleSize!,
-            widthBaseTriangle: item.bubbleSize!.width /
-                (item.widthBaseTriangle ?? state.widthBaseTriangle),
-            movingMode: state.isEditMode && item.uuid == state.bubbleMovingUuid,
-          ),
+          if (item.type == BubbleType.talk)
+            TalkingTriangleOfBubble(
+              center: item.centerPoint!,
+              talkingPoint: item.talkingPoint!,
+              sizeBubble: item.bubbleSize!,
+              widthBaseTriangle: item.bubbleSize!.width /
+                  (item.widthBaseTriangle ?? state.widthBaseTriangle),
+              movingMode:
+                  state.isEditMode && item.uuid == state.bubbleMovingUuid,
+            )
+          else
+            ThoughtBubbleTail(
+              start: _getIntersectionPoint(
+                item.centerPoint!,
+                item.talkingPoint!,
+                item.bubbleSize!,
+              ),
+              end: item.talkingPoint!,
+              isSelected:
+                  state.isEditMode && item.uuid == state.bubbleMovingUuid,
+            ),
       ],
     );
   }
@@ -279,37 +309,8 @@ class _HomeViewState extends State<_HomeView> {
           child: ToolsButtons(
             onLoadImagePressed: _onLoadImagePressed,
             onLoadDialogsCsvPressed: _onLoadCsvPressed,
-            onCancelLastPressed: context.read<CanvasCubit>().cancelLastBubble,
             onSavePressed: _onSavePressed,
-            onResetPressed: () => context.read<CanvasCubit>().init(),
-            onMoveModeCheckboxPressed: (bool? value) =>
-                context.read<CanvasCubit>().toggleEditMode(),
-            onYellowBgCheckboxPressed:
-                context.read<CanvasCubit>().toggleYellowBg,
-            isMoveModeEnabled: state.isEditMode,
-            isYellowBg: state.isYellowBg,
-            font: state.font,
-            onFontChanged: context.read<CanvasCubit>().changeFont,
-            fontSize: state.fontSize,
-            onFontSizedChanged: context.read<CanvasCubit>().changeFontSize,
-            isBubbleMode: state.isRoundBubble,
-            onBubbleModelCheckboxPressed:
-                context.read<CanvasCubit>().toggleBubbleMode,
-            displayConfirmBubble: state.bubbleTalkingPointMode,
-            onConfirmBubblePressed: context.read<CanvasCubit>().confirmBubble,
-            displayRemoveBtn: state.bubbleMovingUuid != null,
-            onRemovedPressed: context.read<CanvasCubit>().removeBubble,
-            widthBaseTriangle: state.widthBaseTriangle,
-            onWidthBaseTriangleChanged:
-                context.read<CanvasCubit>().changeWidthBaseTriangle,
             onBackgroundColorPickerPressed: _onBackgroundColorPickerPressed,
-            hasImage: state.image != null,
-            onStrokeChanged: context.read<CanvasCubit>().changeStrokeImage,
-            strokeImage: state.strokeImage,
-            onRemoveImageBtnPressed: context.read<CanvasCubit>().removeImage,
-            centerImage: state.centerImage,
-            onCenterImagePressed: (bool? value) =>
-                context.read<CanvasCubit>().toggleCenterImage(),
           ),
         ),
       );
@@ -372,4 +373,19 @@ class _HomeViewState extends State<_HomeView> {
       ),
     );
   }
+}
+
+Offset _getIntersectionPoint(Offset center, Offset end, Size size) {
+  final double dx = end.dx - center.dx;
+  final double dy = end.dy - center.dy;
+
+  final double halfWidth = size.width / 2;
+  final double halfHeight = size.height / 2;
+
+  final double tx = halfWidth / dx.abs();
+  final double ty = halfHeight / dy.abs();
+
+  final double t = tx < ty ? tx : ty;
+
+  return Offset(center.dx + t * dx, center.dy + t * dy);
 }

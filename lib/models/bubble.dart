@@ -2,7 +2,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
+enum BubbleType { talk, thought, scream }
+
 class Bubble extends Equatable {
+  final BubbleType type;
   final String uuid;
   final String body;
   final bool isRound;
@@ -18,6 +21,7 @@ class Bubble extends Equatable {
   final Offset? relativeTalkingPoint;
   final double? maxWidthBubble;
   const Bubble({
+    this.type = BubbleType.talk,
     required this.uuid,
     required this.body,
     required this.isRound,
@@ -38,6 +42,7 @@ class Bubble extends Equatable {
     return <String, dynamic>{
       'uuid': uuid,
       'body': body,
+      'type': type,
       'isRound': isRound,
       'isYellowBg': isYellowBg,
       'position': position,
@@ -70,12 +75,13 @@ class Bubble extends Equatable {
       widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
       maxWidthBubble: row[12] != 'null' ? double.parse(row[12]) : null,
       relativeTalkingPoint: row[13].toOffset(),
+      type: row.length > 14 ? BubbleType.values.byName(row[14]) : BubbleType.talk,
     );
   }
 
   @override
   String toString() {
-    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()}';
+    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()};${type.name}';
   }
 
   @override
@@ -84,6 +90,7 @@ class Bubble extends Equatable {
     return <Object?>[
       uuid,
       body,
+      type,
       isRound,
       isYellowBg,
       position,
@@ -100,6 +107,7 @@ class Bubble extends Equatable {
   }
 
   Bubble copyWith({
+    BubbleType? type,
     String? uuid,
     String? body,
     bool? isRound,
@@ -116,6 +124,7 @@ class Bubble extends Equatable {
     double? maxWidthBubble,
   }) {
     return Bubble(
+      type: type ?? this.type,
       uuid: uuid ?? this.uuid,
       body: body ?? this.body,
       isRound: isRound ?? this.isRound,

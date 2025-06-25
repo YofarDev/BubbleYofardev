@@ -1,75 +1,32 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 
+import '../../logic/canvas_cubit.dart';
+import '../../models/bubble.dart';
 import '../../res/app_colors.dart';
 import '../../utils/constants.dart';
+import 'bubble_shape_picker.dart';
 
 class ToolsButtons extends StatelessWidget {
   final Function() onLoadImagePressed;
   final Function() onLoadDialogsCsvPressed;
-  final Function() onCancelLastPressed;
   final Function() onSavePressed;
-  final Function() onResetPressed;
-  final Function() onRemovedPressed;
-  final Function(bool value) onMoveModeCheckboxPressed;
-  final Function(bool value) onYellowBgCheckboxPressed;
-  final Function(bool value) onBubbleModelCheckboxPressed;
-  final Function(String font) onFontChanged;
-  final Function(double value) onFontSizedChanged;
-  final Function(double value) onWidthBaseTriangleChanged;
-  final double widthBaseTriangle;
-  final String font;
-  final double fontSize;
-  final bool isMoveModeEnabled;
-  final bool isYellowBg;
-  final bool isBubbleMode;
-  final bool displayConfirmBubble;
-  final bool displayRemoveBtn;
-  final Function() onConfirmBubblePressed;
   final Function() onBackgroundColorPickerPressed;
-  final Function(double value) onStrokeChanged;
-  final bool hasImage;
-  final double strokeImage;
-  final Function() onRemoveImageBtnPressed;
-  final bool centerImage;
-  final Function(bool? value) onCenterImagePressed;
 
   const ToolsButtons({
     super.key,
     required this.onLoadImagePressed,
     required this.onLoadDialogsCsvPressed,
-    required this.onCancelLastPressed,
     required this.onSavePressed,
-    required this.onResetPressed,
-    required this.onRemovedPressed,
-    required this.onMoveModeCheckboxPressed,
-    required this.onYellowBgCheckboxPressed,
-    required this.onBubbleModelCheckboxPressed,
-    required this.onFontChanged,
-    required this.onFontSizedChanged,
-    required this.onWidthBaseTriangleChanged,
-    required this.widthBaseTriangle,
-    required this.font,
-    required this.fontSize,
-    required this.isMoveModeEnabled,
-    required this.isYellowBg,
-    required this.isBubbleMode,
-    required this.displayConfirmBubble,
-    required this.displayRemoveBtn,
-    required this.onConfirmBubblePressed,
     required this.onBackgroundColorPickerPressed,
-    required this.onStrokeChanged,
-    required this.hasImage,
-    required this.strokeImage,
-    required this.onRemoveImageBtnPressed,
-    required this.centerImage,
-    required this.onCenterImagePressed,
   });
 
   @override
   Widget build(BuildContext context) {
+    final CanvasState state = context.watch<CanvasCubit>().state;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(),
@@ -83,36 +40,47 @@ class ToolsButtons extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              if (hasImage) _centerImageCheckbox(context),
+              if (state.image != null) _centerImageCheckbox(context),
               const SizedBox(height: 16),
-              if (hasImage)
+              //  _bubbleTypePicker(context, state),
+              BubbleShapePicker(
+                selected: state.selectedBubbleType,
+              ),
+              const SizedBox(height: 16),
+              if (state.image != null)
                 _button(
                   "Remove image",
-                  onRemoveImageBtnPressed,
+                  context.read<CanvasCubit>().removeImage,
                   color: Colors.red[400],
                 ),
-              if (hasImage) _strokeImageSlider(),
+              if (state.image != null) _strokeImageSlider(context, state),
               _button("Background color", onBackgroundColorPickerPressed),
               const SizedBox(height: 16),
-              _fontPicker(),
+              _fontPicker(context, state),
               const SizedBox(height: 8),
-              _fontSizePicker(),
+              _fontSizePicker(context, state),
               const SizedBox(height: 8),
-              _getCheckbox(
-                context,
-                'Round bubble',
-                onBubbleModelCheckboxPressed,
-                isBubbleMode,
-              ),
-              const SizedBox(height: 8),
-              _getCheckbox(
-                context,
-                'Yellow background',
-                onYellowBgCheckboxPressed,
-                isYellowBg,
-                color: AppColors.yellow,
-              ),
-              const SizedBox(height: 8),
+              if (state.isTalkBubble)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _getCheckbox(
+                    context,
+                    'Round bubble',
+                    context.read<CanvasCubit>().toggleBubbleMode,
+                    state.isRoundBubble,
+                  ),
+                ),
+              if (state.isTalkBubble)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _getCheckbox(
+                    context,
+                    'Yellow background',
+                    context.read<CanvasCubit>().toggleYellowBg,
+                    state.isYellowBg,
+                    color: AppColors.yellow,
+                  ),
+                ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -121,8 +89,8 @@ class ToolsButtons extends StatelessWidget {
                   _getCheckbox(
                     context,
                     'Edit mode',
-                    onMoveModeCheckboxPressed,
-                    isMoveModeEnabled,
+                    (_) => context.read<CanvasCubit>().toggleEditMode(),
+                    state.isEditMode,
                   ),
                 ],
               ),
@@ -151,38 +119,38 @@ class ToolsButtons extends StatelessWidget {
                   _floatingBtn(
                     Icons.restart_alt,
                     'Restore default settings',
-                    onResetPressed,
+                    () => context.read<CanvasCubit>().init(),
                     color: Colors.red[400],
                   ),
                   const SizedBox(width: 16),
                   _floatingBtn(
                     Icons.subdirectory_arrow_left,
                     'Cancel last',
-                    onCancelLastPressed,
+                    context.read<CanvasCubit>().cancelLastBubble,
                   ),
-                  if (!displayConfirmBubble) const SizedBox(width: 16),
-                  if (!displayConfirmBubble)
+                  if (!state.bubbleTalkingPointMode) const SizedBox(width: 16),
+                  if (!state.bubbleTalkingPointMode)
                     _floatingBtn(Icons.save, 'Save png + csv', onSavePressed),
                 ],
               ),
-              if (displayConfirmBubble) const SizedBox(height: 16),
-              if (displayConfirmBubble)
+              if (state.bubbleTalkingPointMode) const SizedBox(height: 16),
+              if (state.bubbleTalkingPointMode)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    if (displayRemoveBtn)
+                    if (state.bubbleMovingUuid != null)
                       _floatingBtn(
                         Icons.delete,
                         'Remove bubble',
-                        onRemovedPressed,
+                        context.read<CanvasCubit>().removeBubble,
                         color: AppColors.yellow,
                       ),
                     const SizedBox(width: 16),
-                    _sliderWidthBaseTriangle(),
+                    _sliderWidthBaseTriangle(context, state),
                     _floatingBtn(
                       Icons.check,
                       'Confirm bubble',
-                      onConfirmBubblePressed,
+                      context.read<CanvasCubit>().confirmBubble,
                       color: AppColors.yellow,
                     ),
                   ],
@@ -207,17 +175,33 @@ class ToolsButtons extends StatelessWidget {
         ),
       );
 
-  Widget _fontPicker() => DropdownButton<dynamic>(
+  Widget _bubbleTypePicker(BuildContext context, CanvasState state) =>
+      ToggleButtons(
+        isSelected: BubbleType.values
+            .map((BubbleType e) => e == state.selectedBubbleType)
+            .toList(),
+        onPressed: (int index) => context
+            .read<CanvasCubit>()
+            .changeBubbleType(BubbleType.values[index]),
+        children: const <Widget>[
+          Icon(Icons.chat_bubble),
+          Icon(Icons.cloud),
+        ],
+      );
+
+  Widget _fontPicker(BuildContext context, CanvasState state) =>
+      DropdownButton<dynamic>(
         items: Constants.availableFonts
             .map(
               (String e) => DropdownMenuItem<dynamic>(value: e, child: Text(e)),
             )
             .toList(),
-        value: font,
-        onChanged: (dynamic value) => onFontChanged(value as String),
+        value: state.font,
+        onChanged: (dynamic value) =>
+            context.read<CanvasCubit>().changeFont(value as String),
       );
 
-  Widget _strokeImageSlider() => Padding(
+  Widget _strokeImageSlider(BuildContext context, CanvasState state) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -229,22 +213,26 @@ class ToolsButtons extends StatelessWidget {
                 max: 16,
                 activeColor: AppColors.primary,
                 inactiveColor: AppColors.primaryTransparent,
-                value: strokeImage,
-                onChanged: onStrokeChanged,
+                value: state.strokeImage,
+                onChanged: context.read<CanvasCubit>().changeStrokeImage,
               ),
             ),
-            Text("Stroke image : $strokeImage"),
+            Text("Stroke image : ${state.strokeImage}"),
           ],
         ),
       );
 
-  Widget _centerImageCheckbox(BuildContext context) => _getCheckbox(
-        context,
-        "Center image",
-        onCenterImagePressed,
-        centerImage,
-        color: AppColors.yellow,
-      );
+  Widget _centerImageCheckbox(BuildContext context) {
+    final bool centerImage =
+        context.select((CanvasCubit cubit) => cubit.state.centerImage);
+    return _getCheckbox(
+      context,
+      "Center image",
+      (_) => context.read<CanvasCubit>().toggleCenterImage(),
+      centerImage,
+      color: AppColors.yellow,
+    );
+  }
 
   Widget _getCheckbox(
     BuildContext context,
@@ -268,7 +256,7 @@ class ToolsButtons extends StatelessWidget {
         ],
       );
 
-  Widget _fontSizePicker() => Row(
+  Widget _fontSizePicker(BuildContext context, CanvasState state) => Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           SizedBox(
@@ -276,14 +264,14 @@ class ToolsButtons extends StatelessWidget {
             child: Slider(
               activeColor: AppColors.primary,
               inactiveColor: AppColors.primaryTransparent,
-              value: fontSize,
-              onChanged: onFontSizedChanged,
+              value: state.fontSize,
+              onChanged: context.read<CanvasCubit>().changeFontSize,
               min: 10,
               max: 40,
               divisions: 40,
             ),
           ),
-          Text("Font size : $fontSize"),
+          Text("Font size : ${state.fontSize}"),
         ],
       );
 
@@ -302,11 +290,12 @@ class ToolsButtons extends StatelessWidget {
         child: Icon(icon),
       );
 
-  Widget _sliderWidthBaseTriangle() => SizedBox(
+  Widget _sliderWidthBaseTriangle(BuildContext context, CanvasState state) =>
+      SizedBox(
         width: 100,
         child: Slider(
-          value: widthBaseTriangle,
-          onChanged: onWidthBaseTriangleChanged,
+          value: state.widthBaseTriangle,
+          onChanged: context.read<CanvasCubit>().changeWidthBaseTriangle,
           min: 4,
           max: 40,
           activeColor: AppColors.yellow,

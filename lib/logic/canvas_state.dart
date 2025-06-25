@@ -20,9 +20,11 @@ class CanvasState extends Equatable {
   final bool setMaxWidthBubble;
   final bool centerImage;
   final Offset? dragOffset;
+  final BubbleType selectedBubbleType;
 
   const CanvasState({
     this.isEmpty = true,
+    this.selectedBubbleType = BubbleType.talk,
     this.bubbles = const <Bubble>[],
     this.image,
     this.isYellowBg = false,
@@ -64,9 +66,11 @@ class CanvasState extends Equatable {
     bool? centerImage,
     bool? clearImage,
     Offset? dragOffset,
+    BubbleType? selectedBubbleType,
   }) {
     return CanvasState(
       isEmpty: isEmpty ?? this.isEmpty,
+      selectedBubbleType: selectedBubbleType ?? this.selectedBubbleType,
       bubbles: bubbles ?? this.bubbles,
       image: clearImage == true ? null : image ?? this.image,
       isYellowBg: isYellowBg ?? this.isYellowBg,
@@ -110,5 +114,9 @@ class CanvasState extends Equatable {
         setMaxWidthBubble,
         centerImage,
         dragOffset,
+        selectedBubbleType,
       ];
+
+
+      bool get isTalkBubble => selectedBubbleType == BubbleType.talk;
 }
