@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../logic/canvas_cubit.dart';
-import 'home/app_canvas.dart';
-import 'home/tools_buttons.dart';
-import 'home/welcome_panel.dart';
-import 'widgets/bottom_overlay.dart';
-import 'widgets/hide_ui_button.dart';
-import 'widgets/transparent_grid.dart';
+import '../widgets/bottom_overlay.dart';
+import '../widgets/hide_ui_button.dart';
+import '../widgets/transparent_grid.dart';
+import 'app_canvas.dart';
+import 'tools_buttons.dart';
+import 'welcome_panel.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

@@ -118,7 +118,10 @@ class _BubbleShapePickerState extends State<BubbleShapePicker> {
     return Tooltip(
       message: "Pick Bubble type",
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          context.read<CanvasCubit>().confirmBubble();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(20),
         child: Container(
           width: _buttonSize,

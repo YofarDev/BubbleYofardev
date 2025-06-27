@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../logic/canvas_cubit.dart';
-import '../models/bubble.dart';
-import '../utils/image_utils.dart';
-import '../utils/save_file_web.dart';
-import 'widgets/bubble_item.dart';
+import '../../logic/canvas_cubit.dart';
+import '../../models/bubble.dart';
+import '../../utils/image_utils.dart';
+import '../../utils/save_file_web.dart';
+import '../widgets/bubble_item.dart';
 
 class AppCanvas extends StatelessWidget {
   const AppCanvas({super.key});

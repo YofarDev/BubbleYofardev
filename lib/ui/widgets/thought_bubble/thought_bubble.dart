@@ -30,8 +30,7 @@ class ThoughtBubble extends StatelessWidget {
     this.bubbleColor = Colors.white,
     this.borderColor = Colors.black,
     this.borderWidth = 2,
-    this.padding =
-        const EdgeInsets.all(20.0), // Increased padding for cloud shape
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.isSelected = false,
     this.maxWidth,
     this.randomSeed = 42, // Default seed for consistency

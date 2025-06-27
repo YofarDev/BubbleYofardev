@@ -12,17 +12,19 @@ class ScreamBubble extends StatelessWidget {
   final double jaggedIntensity;
   final bool isSelected;
   final double? maxWidth;
+  final double fontSize;
   const ScreamBubble({
     super.key,
     required this.text,
     this.textStyle,
     this.bubbleColor = Colors.white,
     this.borderColor = Colors.black,
-    this.borderWidth = 3,
-    this.padding = const EdgeInsets.all(16.0),
-    this.jaggedIntensity = 10,
+    this.borderWidth = 2,
+    this.padding = const EdgeInsets.all(20),
+    this.jaggedIntensity = 8,
     this.isSelected = false,
     this.maxWidth,
+    this.fontSize = 16,
   });
 
   @override
@@ -42,9 +44,8 @@ class ScreamBubble extends StatelessWidget {
           child: Text(
             text,
             style: textStyle ??
-                const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                TextStyle(
+                  fontSize: fontSize,
                   color: Colors.black,
                 ),
           ),
@@ -74,43 +75,27 @@ class JaggedBubblePainter extends CustomPainter {
     final Paint paint = Paint()
       ..color = bubbleColor
       ..style = PaintingStyle.fill;
-
     final Paint borderPaint = Paint()
       ..color = borderColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth
       ..strokeJoin = StrokeJoin.round;
-
-    // Create jagged path
     final Path path = _createJaggedPath(size);
-
-    // Draw filled bubble
     canvas.drawPath(path, paint);
-
-    // Draw border
     canvas.drawPath(path, borderPaint);
   }
 
   Path _createJaggedPath(Size size) {
     final Path path = Path();
-
     final double bubbleHeight = size.height;
     final double bubbleWidth = size.width;
-
-    // More points for spikier effect
     final double perimeter = 2 * (bubbleWidth + bubbleHeight);
-    final int numPoints =
-        (perimeter / 8).round(); // Increased density for more spikes
-
-    // Create points around the rectangle with more dramatic spikes
+    final int numPoints = (perimeter / 8).round();
     final List<Offset> points = <Offset>[];
-
-    // Top edge (left to right)
     final int topPoints = (numPoints * 0.3).round();
     for (int i = 0; i <= topPoints; i++) {
       final double x = (i / topPoints) * bubbleWidth;
       const double baseY = 0.0;
-      // Alternate between spikes pointing inward and outward for more dramatic effect
       final int spikeDirection = i.isEven ? -1 : 1;
       final double jaggedY = baseY +
           spikeDirection *
@@ -119,8 +104,6 @@ class JaggedBubblePainter extends CustomPainter {
       points.add(Offset(
           x, math.max(-jaggedIntensity, math.min(jaggedIntensity, jaggedY))));
     }
-
-    // Right edge (top to bottom)
     final int rightPoints = (numPoints * getSideIntensity(textLength)).round();
     for (int i = 1; i <= rightPoints; i++) {
       final double y = (i / rightPoints) * bubbleHeight;
@@ -135,8 +118,6 @@ class JaggedBubblePainter extends CustomPainter {
               math.min(bubbleWidth + jaggedIntensity, jaggedX)),
           y));
     }
-
-    // Bottom edge (right to left)
     final int bottomPoints = (numPoints * 0.3).round();
     for (int i = 1; i <= bottomPoints; i++) {
       final double x = bubbleWidth - (i / bottomPoints) * bubbleWidth;
@@ -151,8 +132,6 @@ class JaggedBubblePainter extends CustomPainter {
           math.max(-jaggedIntensity,
               math.min(bubbleHeight + jaggedIntensity, jaggedY))));
     }
-
-    // Left edge (bottom to top)
     final int leftPoints = (numPoints * getSideIntensity(textLength)).round();
     for (int i = 1; i < leftPoints; i++) {
       final double y = bubbleHeight - (i / leftPoints) * bubbleHeight;
@@ -165,8 +144,6 @@ class JaggedBubblePainter extends CustomPainter {
       points.add(Offset(
           math.max(-jaggedIntensity, math.min(jaggedIntensity, jaggedX)), y));
     }
-
-    // Create path from points
     if (points.isNotEmpty) {
       path.moveTo(points[0].dx, points[0].dy);
       for (int i = 1; i < points.length; i++) {
@@ -174,15 +151,14 @@ class JaggedBubblePainter extends CustomPainter {
       }
       path.close();
     }
-
     return path;
   }
 
   double getSideIntensity(int textLength) {
     const double minIntensity = 0.05;
-    const double maxIntensity = 0.20;
+    const double maxIntensity = 0.25;
     const int minLength = 1;
-    const int maxLength = 15;
+    const int maxLength = 20;
     final int clampedLength = textLength.clamp(minLength, maxLength);
     final double normalized =
         (clampedLength - minLength) / (maxLength - minLength);

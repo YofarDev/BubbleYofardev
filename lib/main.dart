@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'logic/canvas_cubit.dart';
-import 'ui/home_page.dart';
+import 'ui/home/home_page.dart';
 
 void main() {
   runApp(const MyApp());

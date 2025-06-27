@@ -66,7 +66,7 @@ class BubbleItem extends StatelessWidget {
     );
   }
 
-    Widget _buildBubbleContent(Bubble item, CanvasState state) {
+  Widget _buildBubbleContent(Bubble item, CanvasState state) {
     switch (item.type) {
       case BubbleType.thought:
         return ThoughtBubble(
@@ -85,9 +85,9 @@ class BubbleItem extends StatelessWidget {
           text: item.body,
           maxWidth: item.maxWidthBubble,
           textStyle: TextStyle(
-              fontFamily: item.font,
-              fontSize: item.fontSize,
-              fontWeight: FontWeight.bold),
+            fontFamily: item.font,
+            fontSize: item.fontSize,
+          ),
         );
       case BubbleType.talk || BubbleType.yellowNarrate || BubbleType.narrate:
         return BubbleContainer(
@@ -102,15 +102,14 @@ class BubbleItem extends StatelessWidget {
     }
   }
 
-
   Offset _getIntersectionPoint(Offset center, Offset end, Size size) {
-  final double dx = end.dx - center.dx;
-  final double dy = end.dy - center.dy;
-  final double halfWidth = size.width / 2;
-  final double halfHeight = size.height / 2;
-  final double tx = halfWidth / dx.abs();
-  final double ty = halfHeight / dy.abs();
-  final double t = tx < ty ? tx : ty;
-  return Offset(center.dx + t * dx, center.dy + t * dy);
-}
+    final double dx = end.dx - center.dx;
+    final double dy = end.dy - center.dy;
+    final double halfWidth = size.width / 2;
+    final double halfHeight = size.height / 2;
+    final double tx = halfWidth / dx.abs();
+    final double ty = halfHeight / dy.abs();
+    final double t = tx < ty ? tx : ty;
+    return Offset(center.dx + t * dx, center.dy + t * dy);
+  }
 }

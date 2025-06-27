@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import 'load_image_button.dart';
+import '../widgets/load_image_button.dart';
 
 class WelcomePanel extends StatelessWidget {
   const WelcomePanel({super.key});
@@ -70,6 +70,24 @@ class WelcomePanel extends StatelessWidget {
           child: const Text(
               "Update 25/06/2025 : Code refactoring + Thought bubble + small UI changes",
               style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
+
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            launchUrl(
+              Uri.parse('https://old-bubble-yofardev.web.app/'),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+                color: Colors.redAccent.withAlpha(50),
+                borderRadius: BorderRadius.circular(8)),
+            child: const Text(
+                "Update 27/06/2025 : Breaking changes - Click here for old version",
+                style: TextStyle(fontFamily: 'OpenSans', fontSize: 12)),
+          ),
         ),
         const SizedBox(height: 64),
         const LoadImageButton(),

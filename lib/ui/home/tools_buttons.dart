@@ -12,8 +12,8 @@ import '../../logic/canvas_cubit.dart';
 import '../../models/bubble.dart';
 import '../../res/app_colors.dart';
 import '../../res/app_constants.dart';
-import 'load_image_button.dart';
-import 'tools_icon_button.dart';
+import '../widgets/load_image_button.dart';
+import '../widgets/tools_icon_button.dart';
 
 class ToolsButtons extends StatelessWidget {
   const ToolsButtons({
