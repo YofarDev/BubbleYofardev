@@ -1,27 +1,61 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 
 import '../../logic/canvas_cubit.dart';
+import '../../models/bubble.dart';
 import '../../res/app_colors.dart';
-import '../../utils/constants.dart';
-import 'bubble_shape_picker.dart';
+import '../../res/app_constants.dart';
 import 'load_image_button.dart';
 import 'tools_icon_button.dart';
 
 class ToolsButtons extends StatelessWidget {
-  final Function() onLoadDialogsCsvPressed;
-  final Function() onSavePressed;
-  final Function() onBackgroundColorPickerPressed;
-
   const ToolsButtons({
     super.key,
-    required this.onLoadDialogsCsvPressed,
-    required this.onSavePressed,
-    required this.onBackgroundColorPickerPressed,
   });
+
+  void _onLoadCsvPressed(BuildContext context) async {
+    final FilePickerResult? result = await FilePicker.platform
+        .pickFiles(allowedExtensions: <String>['csv'], type: FileType.custom);
+    if (result != null) {
+      final bool centerImage =
+          result.files.single.name.contains('_centeredImage');
+      final String csv = utf8.decode(result.files.single.bytes!);
+      context
+          .read<CanvasCubit>()
+          .loadBubblesFromCsv(csv, centerImage: centerImage);
+    }
+  }
+
+  void _onBackgroundColorPickerPressed(BuildContext context) {
+    context.read<CanvasCubit>().hideYoutubeFrame();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Background color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: context.read<CanvasCubit>().state.background,
+            onColorChanged: context.read<CanvasCubit>().changeBackgroundColor,
+          ),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +75,6 @@ class ToolsButtons extends StatelessWidget {
             children: <Widget>[
               if (state.image != null) _centerImageCheckbox(context),
               const SizedBox(height: 16),
-              //  _bubbleTypePicker(context, state),
-              BubbleShapePicker(
-                selected: state.selectedBubbleType,
-              ),
-              const SizedBox(height: 16),
               if (state.image != null)
                 _button(
                   "Remove image",
@@ -53,33 +82,13 @@ class ToolsButtons extends StatelessWidget {
                   color: Colors.red[400],
                 ),
               if (state.image != null) _strokeImageSlider(context, state),
-              _button("Background color", onBackgroundColorPickerPressed),
+              _button("Background color",
+                  () => _onBackgroundColorPickerPressed(context)),
               const SizedBox(height: 16),
               _fontPicker(context, state),
               const SizedBox(height: 8),
               _fontSizePicker(context, state),
               const SizedBox(height: 8),
-              if (state.isTalkBubble)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _getCheckbox(
-                    context,
-                    'Round bubble',
-                    context.read<CanvasCubit>().toggleBubbleMode,
-                    state.isRoundBubble,
-                  ),
-                ),
-              if (state.isTalkBubble)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _getCheckbox(
-                    context,
-                    'Yellow background',
-                    context.read<CanvasCubit>().toggleYellowBg,
-                    state.isYellowBg,
-                    color: AppColors.yellow,
-                  ),
-                ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -93,6 +102,8 @@ class ToolsButtons extends StatelessWidget {
                   ),
                 ],
               ),
+              _getCheckbox(context, 'Trim when saving',
+                  (_) => context.read<CanvasCubit>().toggleTrim(), state.trim),
               const SizedBox(height: 16),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -104,7 +115,7 @@ class ToolsButtons extends StatelessWidget {
                   ToolsIconButton(
                     icon: Icons.file_copy,
                     tag: 'Load previous csv',
-                    onPressed: onLoadDialogsCsvPressed,
+                    onPressed: () => _onLoadCsvPressed(context),
                   ),
                 ],
               ),
@@ -125,11 +136,15 @@ class ToolsButtons extends StatelessWidget {
                     onPressed: context.read<CanvasCubit>().cancelLastBubble,
                   ),
                   if (!state.bubbleTalkingPointMode) const SizedBox(width: 16),
-                  if (!state.bubbleTalkingPointMode)
+                  if (state.status == CanvasStatus.saving)
+                    const CircularProgressIndicator()
+                  else if (!state.bubbleTalkingPointMode)
                     ToolsIconButton(
                         icon: Icons.save,
                         tag: 'Save png + csv',
-                        onPressed: onSavePressed),
+                        onPressed: () => context
+                            .read<CanvasCubit>()
+                            .updateStatus(CanvasStatus.saving)),
                 ],
               ),
               if (state.bubbleTalkingPointMode || state.isEditMode)
@@ -147,7 +162,8 @@ class ToolsButtons extends StatelessWidget {
                         ),
                       if (!state.isEditMode && state.isTalkBubble)
                         _sliderWidthBaseTriangle(context, state),
-                      if (!state.isEditMode)
+                      if (!state.isEditMode &&
+                          state.selectedBubbleType != BubbleType.scream)
                         ToolsIconButton(
                           icon: Icons.check,
                           tag: 'Confirm bubble',
@@ -183,7 +199,7 @@ class ToolsButtons extends StatelessWidget {
 
   Widget _fontPicker(BuildContext context, CanvasState state) =>
       DropdownButton<dynamic>(
-        items: Constants.availableFonts
+        items: AppConstants.availableFonts
             .map(
               (String e) => DropdownMenuItem<dynamic>(value: e, child: Text(e)),
             )

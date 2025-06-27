@@ -2,14 +2,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
-enum BubbleType { talk, thought}
+enum BubbleType { talk, thought, scream, narrate, yellowNarrate }
 
 class Bubble extends Equatable {
   final BubbleType type;
   final String uuid;
   final String body;
-  final bool isRound;
-  final bool isYellowBg;
   final Offset position;
   final String font;
   final double fontSize;
@@ -20,12 +18,11 @@ class Bubble extends Equatable {
   final double? widthBaseTriangle;
   final Offset? relativeTalkingPoint;
   final double? maxWidthBubble;
+  final int seed;
   const Bubble({
     this.type = BubbleType.talk,
     required this.uuid,
     required this.body,
-    required this.isRound,
-    required this.isYellowBg,
     required this.position,
     required this.font,
     required this.fontSize,
@@ -36,64 +33,66 @@ class Bubble extends Equatable {
     this.widthBaseTriangle,
     this.maxWidthBubble,
     this.relativeTalkingPoint,
+    required this.seed,
   });
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toCsvMap() {
     return <String, dynamic>{
       'uuid': uuid,
       'body': body,
-      'type': type,
-      'isRound': isRound,
-      'isYellowBg': isYellowBg,
-      'position': position,
+      'position': position.toCsvString(),
       'font': font,
       'fontSize': fontSize,
       'hasTalkingShape': hasTalkingShape,
-      'talkingPoint': talkingPoint,
-      'centerPoint': centerPoint,
-      'bubbleSize': bubbleSize,
-      'widthBaseTriangle': widthBaseTriangle,
-      'maxWidthBubble': maxWidthBubble,
+      'talkingPoint': talkingPoint?.toCsvString() ?? '',
+      'centerPoint': centerPoint?.toCsvString() ?? '',
+      'bubbleSize': bubbleSize?.toCsvString() ?? '',
+      'widthBaseTriangle': widthBaseTriangle ?? '',
+      'maxWidthBubble': maxWidthBubble ?? '',
+      'relativeTalkingPoint': relativeTalkingPoint?.toCsvString() ?? '',
+      'type': type.name,
+      'seed': seed,
     };
   }
 
-  factory Bubble.fromCsv(
-    List<String> row,
-  ) {
+  factory Bubble.fromMap(Map<String, dynamic> map) {
+    double? maxWidthBubble;
+    try {
+      maxWidthBubble = double.parse(map['maxWidthBubble'] as String);
+    } catch (e) {
+      maxWidthBubble = null;
+    }
+    double? widthBaseTriangle;
+    try {
+      widthBaseTriangle = double.parse(map['widthBaseTriangle'] as String);
+    } catch (e) {
+      widthBaseTriangle = null;
+    }
     return Bubble(
-      uuid: row[0],
-      body: row[1].replaceAll('[[NL]]', '\n'),
-      isRound: row[2] == 'true',
-      isYellowBg: row[3] == 'true',
-      position: row[4].toOffset()!,
-      font: row[5],
-      fontSize: double.parse(row[6]),
-      hasTalkingShape: row[7] == 'true',
-      talkingPoint: row[8].toOffset(),
-      centerPoint: row[9].toOffset(),
-      bubbleSize: row[10].toSize(),
-      widthBaseTriangle: row[11] != 'null' ? double.parse(row[11]) : null,
-      maxWidthBubble: row[12] != 'null' ? double.parse(row[12]) : null,
-      relativeTalkingPoint: row[13].toOffset(),
-      type:
-          row.length > 14 ? BubbleType.values.byName(row[14]) : BubbleType.talk,
-    );
+        uuid: map['uuid'] as String,
+        body: map['body'] as String,
+        position: (map['position'] as String).toOffset()!,
+        font: map['font'] as String,
+        fontSize: (map['fontSize'] as num).toDouble(),
+        hasTalkingShape:
+            map['hasTalkingShape'] == true || map['hasTalkingShape'] == 'true',
+        talkingPoint: (map['talkingPoint'] as String?)?.toOffset(),
+        centerPoint: (map['centerPoint'] as String?)?.toOffset(),
+        bubbleSize: (map['bubbleSize'] as String?)?.toSize(),
+        widthBaseTriangle: widthBaseTriangle,
+        maxWidthBubble: maxWidthBubble,
+        relativeTalkingPoint:
+            (map['relativeTalkingPoint'] as String?)?.toOffset(),
+        type: BubbleType.values.byName(map['type'] as String),
+        seed: map['seed'] as int);
   }
 
   @override
-  String toString() {
-    return '$uuid;${body.replaceAll('\n', '[[NL]]')};$isRound;$isYellowBg;${position.toCsvString()};$font;$fontSize;$hasTalkingShape;${talkingPoint?.toCsvString()};${centerPoint?.toCsvString()};${bubbleSize?.toCsvString()};$widthBaseTriangle;$maxWidthBubble;${relativeTalkingPoint?.toCsvString()};${type.name};';
-  }
-
-  @override
-  // TODO: implement props
   List<Object?> get props {
     return <Object?>[
       uuid,
       body,
       type,
-      isRound,
-      isYellowBg,
       position,
       font,
       fontSize,
@@ -104,43 +103,42 @@ class Bubble extends Equatable {
       widthBaseTriangle,
       relativeTalkingPoint,
       maxWidthBubble,
+      seed
     ];
   }
 
-  Bubble copyWith({
-    BubbleType? type,
-    String? uuid,
-    String? body,
-    bool? isRound,
-    bool? isYellowBg,
-    Offset? position,
-    String? font,
-    double? fontSize,
-    bool? hasTalkingShape,
-    Offset? talkingPoint,
-    Offset? centerPoint,
-    Size? bubbleSize,
-    double? widthBaseTriangle,
-    Offset? relativeTalkingPoint,
-    double? maxWidthBubble,
-  }) {
+  Bubble copyWith(
+      {BubbleType? type,
+      String? uuid,
+      String? body,
+      bool? isRound,
+      bool? isYellowBg,
+      Offset? position,
+      String? font,
+      double? fontSize,
+      bool? hasTalkingShape,
+      Offset? talkingPoint,
+      Offset? centerPoint,
+      Size? bubbleSize,
+      double? widthBaseTriangle,
+      Offset? relativeTalkingPoint,
+      double? maxWidthBubble,
+      int? seed}) {
     return Bubble(
-      type: type ?? this.type,
-      uuid: uuid ?? this.uuid,
-      body: body ?? this.body,
-      isRound: isRound ?? this.isRound,
-      isYellowBg: isYellowBg ?? this.isYellowBg,
-      position: position ?? this.position,
-      font: font ?? this.font,
-      fontSize: fontSize ?? this.fontSize,
-      hasTalkingShape: hasTalkingShape ?? this.hasTalkingShape,
-      talkingPoint: talkingPoint ?? this.talkingPoint,
-      centerPoint: centerPoint ?? this.centerPoint,
-      bubbleSize: bubbleSize ?? this.bubbleSize,
-      widthBaseTriangle: widthBaseTriangle ?? this.widthBaseTriangle,
-      relativeTalkingPoint: relativeTalkingPoint ?? this.relativeTalkingPoint,
-      maxWidthBubble: maxWidthBubble ?? this.maxWidthBubble,
-    );
+        type: type ?? this.type,
+        uuid: uuid ?? this.uuid,
+        body: body ?? this.body,
+        position: position ?? this.position,
+        font: font ?? this.font,
+        fontSize: fontSize ?? this.fontSize,
+        hasTalkingShape: hasTalkingShape ?? this.hasTalkingShape,
+        talkingPoint: talkingPoint ?? this.talkingPoint,
+        centerPoint: centerPoint ?? this.centerPoint,
+        bubbleSize: bubbleSize ?? this.bubbleSize,
+        widthBaseTriangle: widthBaseTriangle ?? this.widthBaseTriangle,
+        relativeTalkingPoint: relativeTalkingPoint ?? this.relativeTalkingPoint,
+        maxWidthBubble: maxWidthBubble ?? this.maxWidthBubble,
+        seed: seed ?? this.seed);
   }
 }
 
@@ -158,7 +156,7 @@ extension SizeUtils on Size {
 
 extension Utils on String {
   Offset? toOffset() {
-    if (this == 'null') return null;
+    if (this == 'null' || isEmpty) return null;
     final List<String> l = split('//');
     return Offset(double.parse(l[0]), double.parse(l[1]));
   }

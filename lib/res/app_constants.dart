@@ -1,4 +1,4 @@
-class Constants {
+class AppConstants {
   static List<String> availableFonts = <String>[
     'Anime',
     'BottleRocket',

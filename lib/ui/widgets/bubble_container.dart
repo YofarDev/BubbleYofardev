@@ -11,7 +11,7 @@ class BubbleContainer extends StatelessWidget {
   final double fontSize;
   final bool isRoundBubble;
   final bool movingMode;
-  final double? widthBubble;
+  final double? maxWidth;
 
   const BubbleContainer({
     super.key,
@@ -21,13 +21,13 @@ class BubbleContainer extends StatelessWidget {
     required this.fontSize,
     required this.isRoundBubble,
     required this.movingMode,
-    this.widthBubble,
+    this.maxWidth,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: widthBubble,
+      width: maxWidth,
       padding: EdgeInsets.symmetric(
         horizontal: isRoundBubble ? 12 : 8,
         vertical: isRoundBubble ? 8 : 4,

@@ -1,137 +1,192 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
+/// A widget that displays text inside a cloud-shaped thought bubble.
+///
+/// The shape of the cloud is deterministic based on the [randomSeed] provided.
 class ThoughtBubble extends StatelessWidget {
-  final Widget child;
-  final Color? backgroundColor;
-  final Color? borderColor;
+  final String text;
+  final TextStyle? textStyle;
+  final Color bubbleColor;
+  final Color borderColor;
   final double borderWidth;
-  final double padding;
-  final double bumpiness;
-  final bool movingMode;
+  final EdgeInsets padding;
+  final bool isSelected;
+  final double? maxWidth;
+
+  /// A seed for the random number generator to create a deterministic cloud shape.
+  /// Providing the same seed will always result in the same shape for the same size.
+  final int randomSeed;
+
+  /// Controls how much the cloud puffs bulge outwards. Values around 1.0 are standard.
+  /// Smaller values (<1.0) make the cloud flatter, larger values (>1.0) make it puffier.
+  final double puffiness;
 
   const ThoughtBubble({
     super.key,
-    required this.child,
-    this.movingMode = false,
-    this.backgroundColor = Colors.white,
+    required this.text,
+    this.textStyle,
+    this.bubbleColor = Colors.white,
     this.borderColor = Colors.black,
-    this.borderWidth = 2.0,
-    this.padding = 20.0,
-    this.bumpiness = 15.0,
+    this.borderWidth = 2,
+    this.padding =
+        const EdgeInsets.all(20.0), // Increased padding for cloud shape
+    this.isSelected = false,
+    this.maxWidth,
+    this.randomSeed = 42, // Default seed for consistency
+    this.puffiness = 0.5,
   });
 
   @override
   Widget build(BuildContext context) {
+    int puffcount;
+    if (maxWidth != null) {
+      puffcount = (maxWidth! / 10).toInt();
+    } else {
+      puffcount = math.max(15, text.length);
+    }
     return CustomPaint(
-      painter: ThoughtBubblePainter(
-        backgroundColor: backgroundColor,
-        borderColor: movingMode ? Colors.red : borderColor,
+      painter: CloudBubblePainter(
+        bubbleColor: bubbleColor,
+        borderColor: isSelected ? Colors.red : borderColor,
         borderWidth: borderWidth,
-        bumpiness: bumpiness,
+        randomSeed: randomSeed,
+        puffCount: puffcount,
+        puffiness: puffiness,
       ),
-      child: Padding(
-        padding: EdgeInsets.all(padding),
-        child: child,
+      child: Container(
+        padding: padding,
+        width: maxWidth,
+        // Using a constrained box to provide the painter with a definitive size
+        child: Center(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: textStyle ??
+                const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class ThoughtBubblePainter extends CustomPainter {
-  final Color? backgroundColor;
-  final Color? borderColor;
+class CloudBubblePainter extends CustomPainter {
+  final Color bubbleColor;
+  final Color borderColor;
   final double borderWidth;
-  final double bumpiness;
+  final int randomSeed;
+  final int puffCount;
+  final double puffiness;
 
-  ThoughtBubblePainter({
-    this.backgroundColor,
-    this.borderColor,
-    this.borderWidth = 2.0,
-    this.bumpiness = 15.0,
+  CloudBubblePainter({
+    required this.bubbleColor,
+    required this.borderColor,
+    required this.borderWidth,
+    required this.randomSeed,
+    required this.puffCount,
+    required this.puffiness,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Paint bubblePaint = Paint()
+      ..color = bubbleColor
+      ..style = PaintingStyle.fill;
+
+    final Paint borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderWidth
+      ..strokeJoin = StrokeJoin.round;
+
+    final Path path = _createCloudyPath(size);
+
+    canvas.drawPath(path, bubblePaint);
+    canvas.drawPath(path, borderPaint);
+  }
+
+  Path _createCloudyPath(Size size) {
+    final Path path = Path();
+    // Use a Random instance seeded to ensure deterministic shapes
+    final math.Random random = math.Random(randomSeed);
+
+    final List<Offset> points = <Offset>[];
     final double width = size.width;
     final double height = size.height;
+    final double perimeter = (width + height) * 2;
+    final double step = perimeter / puffCount;
 
-    final Path path = Path();
+    // Distribute points along the perimeter of the bounding box
+    for (int i = 0; i < puffCount; i++) {
+      final double distanceAlongPerimeter =
+          i * step + random.nextDouble() * step * 0.8 - step * 0.4;
 
-    path.moveTo(0, height * 0.5);
+      Offset point;
+      if (distanceAlongPerimeter < width) {
+        // Top edge
+        point = Offset(distanceAlongPerimeter, 0);
+      } else if (distanceAlongPerimeter < width + height) {
+        // Right edge
+        point = Offset(width, distanceAlongPerimeter - width);
+      } else if (distanceAlongPerimeter < width * 2 + height) {
+        // Bottom edge
+        point =
+            Offset(width - (distanceAlongPerimeter - width - height), height);
+      } else {
+        // Left edge
+        point =
+            Offset(0, height - (distanceAlongPerimeter - width * 2 - height));
+      }
+      points.add(point);
+    }
 
-    path.quadraticBezierTo(
-      -bumpiness,
-      height * 0.2,
-      width * 0.1,
-      0,
-    );
+    if (points.isEmpty) {
+      return path;
+    }
 
-    path.quadraticBezierTo(
-      width * 0.2,
-      -bumpiness,
-      width * 0.5,
-      0,
-    );
-    path.quadraticBezierTo(
-      width * 0.8,
-      -bumpiness * 0.8,
-      width * 0.9,
-      0,
-    );
+    // Start the path at the last point to ensure a smooth loop
+    path.moveTo(points.last.dx, points.last.dy);
 
-    path.quadraticBezierTo(
-      width + bumpiness,
-      height * 0.3,
-      width,
-      height * 0.6,
-    );
+    // Create the cloud puffs by drawing arcs between the points
+    for (int i = 0; i < points.length; i++) {
+      final Offset currentPoint = points[i];
+      final Offset nextPoint = points[(i + 1) % points.length];
 
-    path.quadraticBezierTo(
-      width,
-      height + bumpiness,
-      width * 0.7,
-      height,
-    );
-    path.quadraticBezierTo(
-      width * 0.3,
-      height + bumpiness * 1.2,
-      width * 0.2,
-      height,
-    );
+      // Calculate the distance between points to determine the radius of the puff
+      final double distance = (nextPoint - currentPoint).distance;
 
-    path.quadraticBezierTo(
-      -bumpiness * 0.8,
-      height * 0.9,
-      0,
-      height * 0.5,
-    );
+      // The radius is based on the distance, puffiness, and a bit of randomness
+      final double radiusValue = distance /
+          2 *
+          (0.8 +
+              random.nextDouble() *
+                  0.4) * // Random variation for a natural look
+          puffiness;
+
+      path.arcToPoint(
+        currentPoint,
+        radius: Radius.circular(math.max(5.0, radiusValue)),
+      );
+    }
 
     path.close();
-
-    if (backgroundColor != null) {
-      final Paint fillPaint = Paint()
-        ..color = backgroundColor!
-        ..style = PaintingStyle.fill;
-      canvas.drawPath(path, fillPaint);
-    }
-
-    if (borderColor != null && borderWidth > 0) {
-      final Paint borderPaint = Paint()
-        ..color = borderColor!
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth;
-      canvas.drawPath(path, borderPaint);
-    }
+    return path;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    if (oldDelegate is ThoughtBubblePainter) {
-      return oldDelegate.backgroundColor != backgroundColor ||
-          oldDelegate.borderColor != borderColor ||
-          oldDelegate.borderWidth != borderWidth ||
-          oldDelegate.bumpiness != bumpiness;
-    }
-    return true;
+  bool shouldRepaint(covariant CloudBubblePainter oldDelegate) {
+    // Repaint if any of the visual properties change
+    return oldDelegate.bubbleColor != bubbleColor ||
+        oldDelegate.borderColor != borderColor ||
+        oldDelegate.borderWidth != borderWidth ||
+        oldDelegate.randomSeed != randomSeed ||
+        oldDelegate.puffCount != puffCount ||
+        oldDelegate.puffiness != puffiness;
   }
 }

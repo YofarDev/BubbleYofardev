@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
@@ -7,11 +8,15 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/bubble.dart';
+import '../services/bubble_csv_service.dart';
 
 part 'canvas_state.dart';
 
 class CanvasCubit extends Cubit<CanvasState> {
   CanvasCubit() : super(const CanvasState());
+
+    final TextEditingController textController = TextEditingController();
+
 
   void init() {
     emit(
@@ -34,25 +39,29 @@ class CanvasCubit extends Cubit<CanvasState> {
     _getPackageInfo();
   }
 
+  void updateStatus(CanvasStatus status) {
+    emit(state.copyWith(status: status));
+  }
+
+  void toggleTrim(){
+    emit(state.copyWith(trim: !state.trim));
+  }
+
   void _getPackageInfo() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     emit(state.copyWith(packageInfo: packageInfo));
+  }
+
+  void toggleHideUi() {
+    emit(state.copyWith(hideUi: !state.hideUi));
   }
 
   void loadImage(Uint8List imageBytes) {
     emit(state.copyWith(image: imageBytes, isEmpty: false));
   }
 
-  void loadBubblesFromCsv(String csvData, {required bool centerImage}) {
-    final List<String> rows = csvData.split("\n");
-    final List<Bubble> bubbles = <Bubble>[];
-    int i = 0;
-    for (final String row in rows) {
-      if (i > 0 && row.isNotEmpty) {
-        bubbles.add(Bubble.fromCsv(row.split(';')));
-      }
-      i++;
-    }
+  void loadBubblesFromCsv(String csvData, {required bool centerImage}) async {
+    final List<Bubble> bubbles = await BubbleCsvService.loadBubbles(csvData);
     emit(state.copyWith(
         bubbles: bubbles, centerImage: centerImage, isEmpty: false));
   }
@@ -62,12 +71,11 @@ class CanvasCubit extends Cubit<CanvasState> {
       type: state.selectedBubbleType,
       uuid: const Uuid().v4(),
       body: text,
-      isRound: state.isRoundBubble,
-      isYellowBg: state.isYellowBg,
       position: position,
       font: state.font,
       fontSize: state.fontSize,
       maxWidthBubble: state.setMaxWidthBubble ? state.maxWidthBubble : null,
+      seed: Random().nextInt(1000),
     );
 
     final List<Bubble> bubbles = <Bubble>[...state.bubbles, newBubble];
@@ -111,7 +119,7 @@ class CanvasCubit extends Cubit<CanvasState> {
       emit(
         state.copyWith(
           creatingBubble: false,
-          bubbleTalkingPointMode: true,
+          bubbleTalkingPointMode: state.hasTrailMode,
           bubbles: updatedBubbles,
         ),
       );
